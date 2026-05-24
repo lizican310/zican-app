@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>子灿 - 团队协作工具</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- 登录界面 -->
+        <div id="login-screen" class="screen active">
+            <div class="container">
+                <h1>🚀 子灿</h1>
+                <p class="subtitle">团队协作工具</p>
+                <div class="login-form">
+                    <input type="text" id="username" placeholder="输入你的名字" />
+                    <button id="login-btn" class="btn primary">进入</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主界面 -->
+        <div id="main-screen" class="screen">
+            <header>
+                <h2>子灿团队</h2>
+                <div class="user-info">
+                    <span id="current-user"></span>
+                    <button id="logout-btn" class="btn small">退出</button>
+                </div>
+            </header>
+
+            <div class="content">
+                <!-- 组员管理 -->
+                <div class="section">
+                    <h3>👥 组员管理</h3>
+                    <div class="add-member">
+                        <input type="text" id="new-member-name" placeholder="添加新组员" />
+                        <button id="add-member-btn" class="btn small">添加</button>
+                    </div>
+                    <ul id="member-list" class="list"></ul>
+                </div>
+
+                <!-- 任务管理 -->
+                <div class="section">
+                    <h3>📋 任务列表</h3>
+                    <div class="add-task">
+                        <input type="text" id="new-task-title" placeholder="新任务" />
+                        <select id="task-assignee">
+                            <option value="">未分配</option>
+                        </select>
+                        <button id="add-task-btn" class="btn small">添加</button>
+                    </div>
+                    <ul id="task-list" class="list"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/supabase-config.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
