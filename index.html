@@ -1,64 +1,3059 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>子灿 - 团队协作工具</title>
-    <link rel="stylesheet" href="css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="子灿">
+    <meta name="theme-color" content="#F2F2F7">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <meta name="msapplication-TileColor" content="#007AFF">
+    <title>子灿</title>
+    <style>
+        :root {
+            --primary: #007AFF;
+            --bg: #F2F2F7;
+            --card: #FFFFFF;
+            --text: #000000;
+            --text-secondary: #8E8E93;
+            --separator: #C6C6C8;
+            --red: #FF3B30;
+            --green: #34C759;
+            --orange: #FF9500;
+            --yellow: #FFCC00;
+            --radius: 13px;
+            --safe-top: env(safe-area-inset-top, 20px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #000000;
+                --card: #1C1C1E;
+                --text: #FFFFFF;
+                --text-secondary: #EBEBF5;
+                --separator: #38383A;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            max-width: 500px;
+            margin: 0 auto;
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: var(--bg);
+        }
+
+        .page {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: calc(83px + var(--safe-bottom));
+        }
+
+        .page.active {
+            display: flex;
+        }
+
+        .nav-bar {
+            padding-top: var(--safe-top);
+            background: rgba(242, 242, 247, 0.85);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .nav-bar {
+                background: rgba(0, 0, 0, 0.85);
+            }
+        }
+
+        .nav-title {
+            font-size: 34px;
+            font-weight: 700;
+            padding: 0 20px 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px 10px;
+        }
+
+        .nav-header .nav-title {
+            padding: 0;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 17px;
+            cursor: pointer;
+            padding: 8px;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .content {
+            flex: 1;
+            padding: 0 20px 20px;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 500px;
+            background: rgba(242, 242, 247, 0.85);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: var(--safe-bottom);
+            padding-top: 8px;
+            z-index: 1000;
+            border-top: 0.5px solid var(--separator);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .tab-bar {
+                background: rgba(0, 0, 0, 0.85);
+            }
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: 4px 12px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            text-decoration: none;
+            min-width: 44px;
+            min-height: 44px;
+            justify-content: center;
+            position: relative;
+        }
+
+        .tab-item.active {
+            color: var(--primary);
+        }
+
+        .tab-icon {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .tab-label {
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        .badge {
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            background: var(--red);
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+        }
+
+        .segmented-control {
+            display: flex;
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 2px;
+            margin-bottom: 16px;
+        }
+
+        .segment-item {
+            flex: 1;
+            text-align: center;
+            padding: 7px 12px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 6px;
+            color: var(--text);
+            transition: all 0.2s;
+            border: none;
+            background: none;
+        }
+
+        .segment-item.active {
+            background: var(--card);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .list-group {
+            background: var(--card);
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 0.5px solid var(--separator);
+            cursor: pointer;
+            min-height: 44px;
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-item-content {
+            flex: 1;
+        }
+
+        .list-item-title {
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        .list-item-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .chevron {
+            width: 8px;
+            height: 13px;
+            fill: var(--text-secondary);
+            margin-left: 8px;
+        }
+
+        .toggle {
+            width: 51px;
+            height: 31px;
+            border-radius: 16px;
+            background: #E9E9EB;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+            border: none;
+        }
+
+        .toggle.active {
+            background: var(--green);
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 27px;
+            height: 27px;
+            border-radius: 50%;
+            background: white;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .toggle.active::after {
+            transform: translateX(20px);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 2000;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-sheet {
+            background: var(--card);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 13px 13px 0 0;
+            padding: 20px;
+            padding-bottom: calc(20px + var(--safe-bottom));
+            animation: slideUp 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .modal-cancel {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 17px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .modal-save {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--separator);
+            border-radius: 8px;
+            font-size: 16px;
+            background: var(--bg);
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            min-height: 44px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .priority-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .priority-high {
+            background: #FF3B30;
+            color: white;
+        }
+
+        .priority-medium {
+            background: #FF9500;
+            color: white;
+        }
+
+        .priority-normal {
+            background: var(--primary);
+            color: white;
+        }
+
+        .category-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            background: var(--bg);
+            color: var(--text-secondary);
+            margin-left: 8px;
+        }
+
+        .weather-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .weather-temp {
+            font-size: 64px;
+            font-weight: 200;
+            line-height: 1;
+        }
+
+        .weather-condition {
+            font-size: 20px;
+            margin-top: 8px;
+        }
+
+        .weather-city {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+        .habit-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: var(--card);
+            border-radius: var(--radius);
+            margin-bottom: 8px;
+        }
+
+        .habit-check {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .habit-check.checked {
+            background: var(--primary);
+        }
+
+        .habit-check svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+            display: none;
+        }
+
+        .habit-check.checked svg {
+            display: block;
+        }
+
+        .habit-info {
+            flex: 1;
+        }
+
+        .habit-name {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .habit-streak {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .week-dots {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .week-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--separator);
+        }
+
+        .week-dot.filled {
+            background: var(--primary);
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: var(--card);
+            border-radius: var(--radius);
+            margin-bottom: 8px;
+        }
+
+        .todo-checkbox {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--separator);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .todo-checkbox.checked {
+            background: var(--green);
+            border-color: var(--green);
+        }
+
+        .todo-checkbox svg {
+            width: 14px;
+            height: 14px;
+            fill: white;
+            display: none;
+        }
+
+        .todo-delete {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 14px;
+            flex-shrink: 0;
+            margin-left: 8px;
+            transition: all 0.2s;
+        }
+
+        .todo-delete:hover {
+            background: var(--red);
+            color: white;
+        }
+
+        .todo-checkbox.checked svg {
+            display: block;
+        }
+
+        .todo-content {
+            flex: 1;
+        }
+
+        .todo-title {
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        .todo-title.completed {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+
+        .todo-meta {
+            display: flex;
+            align-items: center;
+            margin-top: 4px;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .todo-due {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .todo-due.overdue {
+            color: var(--red);
+        }
+
+        .news-item {
+            padding: 12px;
+            background: var(--card);
+            border-radius: var(--radius);
+            margin-bottom: 8px;
+        }
+
+        .news-category {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .news-category.经济 { background: #E3F2FD; color: #1976D2; }
+        .news-category.政治 { background: #FFEBEE; color: #C62828; }
+        .news-category.文化 { background: #F3E5F5; color: #7B1FA2; }
+        .news-category.社会 { background: #E8F5E9; color: #388E3C; }
+        .news-category.娱乐 { background: #FFF3E0; color: #F57C00; }
+        .news-category.教育 { background: #E0F2F1; color: #00796B; }
+
+        .news-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .news-summary {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .news-source {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+
+        .horoscope-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .horoscope-sign {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .horoscope-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .star-rating {
+            display: inline-flex;
+            gap: 2px;
+        }
+
+        .star {
+            width: 16px;
+            height: 16px;
+        }
+
+        .star.filled {
+            fill: var(--yellow);
+        }
+
+        .star.empty {
+            fill: var(--separator);
+        }
+
+        .group-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            cursor: pointer;
+        }
+
+        .group-name {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .group-count {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .group-members {
+            padding: 0 16px 16px;
+            display: none;
+        }
+
+        .group-members.expanded {
+            display: block;
+        }
+
+        .member-item {
+            padding: 8px 0;
+            border-bottom: 0.5px solid var(--separator);
+            font-size: 14px;
+        }
+
+        .member-item:last-child {
+            border-bottom: none;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--separator);
+            border-radius: 8px;
+            font-size: 16px;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .empty-state-text {
+            font-size: 16px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+
+        .scroll-horizontal {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 8px 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .scroll-horizontal::-webkit-scrollbar {
+            display: none;
+        }
+
+        .sign-selector {
+            flex-shrink: 0;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .sign-selector.active {
+            border-color: var(--primary);
+        }
+
+        .forecast-day {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 0.5px solid var(--separator);
+        }
+
+        .forecast-day:last-child {
+            border-bottom: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .checkin-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        ::-webkit-scrollbar {
+            width: 0;
+            height: 0;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 3000;
+            animation: fadeIn 0.3s;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 10px 16px;
+            background: var(--bg);
+            border: 1px solid var(--separator);
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+
+        .violation-item {
+            padding: 12px;
+            background: var(--card);
+            border-radius: var(--radius);
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .violation-meta {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 4px;
+            flex-wrap: wrap;
+        }
+
+        .violation-type {
+            background: #FFE5E5;
+            color: #D32F2F;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: var(--card);
+            border-radius: var(--radius);
+            margin-bottom: 8px;
+            gap: 12px;
+        }
+
+        .checklist-item input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            accent-color: var(--primary);
+        }
+
+        .checklist-label {
+            flex: 1;
+            font-size: 15px;
+        }
+
+        .todo-priority-star {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin-left: 6px;
+            flex-shrink: 0;
+            transition: transform 0.2s;
+        }
+        .todo-priority-star:hover {
+            transform: scale(1.2);
+        }
+        .todo-priority-star.p0 { color: #FF3B30; }
+        .todo-priority-star.p1 { color: #FF9500; }
+        .todo-priority-star.p2 { color: #FFCC00; }
+        .todo-priority-star.p3 { color: #007AFF; }
+        .todo-priority-star.no-priority { color: var(--separator); }
+
+        .quick-links-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .quick-link-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background: var(--bg);
+            border: 1px solid var(--separator);
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--text);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .quick-link-item:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .quick-link-item .ql-delete {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-left: 4px;
+            opacity: 0.6;
+        }
+        .quick-link-item .ql-delete:hover {
+            opacity: 1;
+            background: var(--red);
+        }
+        .add-quick-link-btn {
+            padding: 8px 12px;
+            background: none;
+            border: 1px dashed var(--separator);
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .add-quick-link-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .card-settings-btn {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            padding: 8px;
+            color: var(--text);
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .settings-modal-card-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .settings-card-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 0.5px solid var(--separator);
+        }
+        .settings-card-item:last-child {
+            border-bottom: none;
+        }
+        .settings-card-item input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            accent-color: var(--primary);
+            margin-right: 12px;
+        }
+        .settings-card-item label {
+            font-size: 16px;
+        }
+
+        textarea.input-field {
+            min-height: 80px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .sortable-ghost {
+            opacity: 0.4;
+            background: var(--primary) !important;
+        }
+        .sortable-chosen {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+        .home-card-wrapper {
+            touch-action: none;
+        }
+    
+        /* ==================== Stats Weekly Report ==================== */
+        .stats-page {
+            padding: 0 20px 20px;
+        }
+        .stats-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 16px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stats-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .stats-card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .stats-big-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--primary);
+            text-align: center;
+            padding: 8px 0;
+        }
+        .stats-row {
+            display: flex;
+            gap: 12px;
+        }
+        .stats-row .stat-card {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        .stats-bar-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 60px;
+            justify-content: space-between;
+            padding: 0 4px;
+        }
+        .stats-bar-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            height: 100%;
+        }
+        .stats-bar {
+            width: 100%;
+            max-width: 28px;
+            border-radius: 4px 4px 0 0;
+            background: var(--primary);
+            transition: height 0.3s;
+            min-height: 4px;
+        }
+        .stats-bar-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            text-align: center;
+        }
+        .stats-emoji-row {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            margin-top: 8px;
+        }
+        .stats-emoji-item {
+            flex: 1;
+        }
+        .stats-emoji-item .emoji {
+            font-size: 24px;
+        }
+        .stats-emoji-item .value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        .stats-emoji-item .label {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+        .stats-share-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .stats-share-btn:active {
+            opacity: 0.8;
+        }
+        .stats-detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .stats-detail-item {
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .stats-detail-icon {
+            font-size: 20px;
+        }
+        .stats-detail-info {
+            flex: 1;
+        }
+        .stats-detail-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .stats-detail-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+</style>
 </head>
 <body>
-    <div id="app">
-        <!-- 登录界面 -->
-        <div id="login-screen" class="screen active">
-            <div class="container">
-                <h1>🚀 子灿</h1>
-                <p class="subtitle">团队协作工具</p>
-                <div class="login-form">
-                    <input type="text" id="username" placeholder="输入你的名字" />
-                    <button id="login-btn" class="btn primary">进入</button>
+    <div class="app-container">
+        <!-- Page 1: 今日 -->
+        <div id="page-today" class="page active">
+            <div class="nav-bar">
+                <div class="nav-header">
+                    <div class="nav-title" id="greeting">早上好，子灿</div>
+                    <button class="card-settings-btn" onclick="showCardSettingsModal()" title="首页卡片设置">⚙️</button>
+                </div>
+            </div>
+            <div class="content" id="home-cards-container">
+                <div class="home-card-wrapper" id="home-card-weather">
+                    <div class="weather-card" id="weather-card">
+                        <div class="weather-temp" id="weather-temp">--°</div>
+                        <div class="weather-condition" id="weather-condition">加载中...</div>
+                        <div class="weather-city" id="weather-city">--</div>
+                    </div>
+                </div>
+                <div class="home-card-wrapper" id="home-card-habits">
+                    <div class="card">
+                        <div style="font-size: 20px; font-weight: 600; margin-bottom: 12px;">今日习惯</div>
+                        <div id="today-habits-list"></div>
+                        <div id="no-habits-today" class="empty-state" style="display: none;">
+                            <div class="empty-state-icon">📋</div>
+                            <div class="empty-state-text">还没有习惯，去添加吧</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="home-card-wrapper" id="home-card-todos">
+                    <div class="card">
+                        <div style="font-size: 20px; font-weight: 600; margin-bottom: 12px;">待办事项</div>
+                        <div id="today-todos-list"></div>
+                        <div id="no-todos-today" class="empty-state" style="display: none;">
+                            <div class="empty-state-icon">✅</div>
+                            <div class="empty-state-text">暂无待办事项</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="home-card-wrapper" id="home-card-quicklinks">
+                    <div class="card">
+                        <div style="font-size: 20px; font-weight: 600; margin-bottom: 12px;">快捷入口</div>
+                        <div class="quick-links-grid" id="quick-links-list"></div>
+                        <button class="add-quick-link-btn" onclick="showAddQuickLinkModal()" id="add-quick-link-btn" style="display: none;">+ 添加链接</button>
+                    </div>
+                </div>
+                <div class="home-card-wrapper" id="home-card-news">
+                    <div class="card">
+                        <div style="font-size: 20px; font-weight: 600; margin-bottom: 12px;">今日要闻</div>
+                        <div id="today-news-list"></div>
+                    </div>
+                </div>
+                <div class="home-card-wrapper" id="home-card-horoscope">
+                    <div class="horoscope-card" onclick="switchPage('info'); switchInfoTab('horoscope');">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <div style="font-size: 18px; font-weight: 600;">双鱼座今日运势</div>
+                            <div style="color: var(--primary); font-size: 14px;">查看详情 ></div>
+                        </div>
+                        <div class="horoscope-text" id="today-horoscope-summary">加载中...</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- 主界面 -->
-        <div id="main-screen" class="screen">
-            <header>
-                <h2>子灿团队</h2>
-                <div class="user-info">
-                    <span id="current-user"></span>
-                    <button id="logout-btn" class="btn small">退出</button>
+        <!-- Page 2: 习惯 -->
+        <div id="page-habits" class="page">
+            <div class="nav-bar">
+                <div class="nav-header">
+                    <div class="nav-title">习惯</div>
+                    <button class="nav-btn" onclick="showAddHabitModal()">+</button>
                 </div>
-            </header>
-
+                <div class="nav-bar-content" style="padding: 0 20px 10px;">
+                    <div class="segmented-control" id="habit-segment">
+                        <button class="segment-item active" data-filter="all" onclick="filterHabits('all')">全部</button>
+                        <button class="segment-item" data-filter="工作" onclick="filterHabits('工作')">工作</button>
+                        <button class="segment-item" data-filter="学习" onclick="filterHabits('学习')">学习</button>
+                        <button class="segment-item" data-filter="生活" onclick="filterHabits('生活')">生活</button>
+                    </div>
+                </div>
+            </div>
             <div class="content">
-                <!-- 组员管理 -->
-                <div class="section">
-                    <h3>👥 组员管理</h3>
-                    <div class="add-member">
-                        <input type="text" id="new-member-name" placeholder="添加新组员" />
-                        <button id="add-member-btn" class="btn small">添加</button>
+                <div id="habits-list"></div>
+                <div id="no-habits" class="empty-state" style="display: none;">
+                    <div class="empty-state-icon">🌟</div>
+                    <div class="empty-state-text">还没有习惯，点击 + 添加</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 3: 待办 -->
+        <div id="page-todos" class="page">
+            <div class="nav-bar">
+                <div class="nav-header">
+                    <div class="nav-title">待办</div>
+                    <button class="nav-btn" onclick="showAddTodoModal()">+</button>
+                </div>
+                <div class="nav-bar-content" style="padding: 0 20px 10px;">
+                    <div class="segmented-control" id="todo-segment">
+                        <button class="segment-item active" data-filter="all" onclick="filterTodos('all')">全部</button>
+                        <button class="segment-item" data-filter="工作" onclick="filterTodos('工作')">工作</button>
+                        <button class="segment-item" data-filter="生活" onclick="filterTodos('生活')">生活</button>
+                        <button class="segment-item" data-filter="学习" onclick="filterTodos('学习')">学习</button>
                     </div>
-                    <ul id="member-list" class="list"></ul>
+                </div>
+            </div>
+            <div class="content">
+                <div id="todos-list"></div>
+                <div id="no-todos" class="empty-state" style="display: none;">
+                    <div class="empty-state-icon">📝</div>
+                    <div class="empty-state-text">还没有待办，点击 + 添加</div>
+                </div>
+                <div id="completed-todos-section" style="display: none;">
+                    <div style="font-size: 18px; font-weight: 600; margin: 20px 0 12px; cursor: pointer;" onclick="toggleCompletedTodos()">
+                        已完成 <span id="completed-count">0</span> <span id="completed-arrow">▼</span>
+                    </div>
+                    <div id="completed-todos-list" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 4: 资讯 -->
+        <div id="page-info" class="page">
+            <div class="nav-bar">
+                <div class="nav-header">
+                    <div class="nav-title">资讯</div>
+                </div>
+                <div class="nav-bar-content" style="padding: 0 20px 10px;">
+                    <div class="segmented-control" id="info-segment">
+                        <button class="segment-item active" data-tab="weather" onclick="switchInfoTab('weather')">天气</button>
+                        <button class="segment-item" data-tab="news" onclick="switchInfoTab('news')">新闻</button>
+                        <button class="segment-item" data-tab="horoscope" onclick="switchInfoTab('horoscope')">星座</button>
+                    </div>
+                </div>
+            </div>
+            <div class="content">
+                <div id="info-weather" class="info-tab">
+                    <div class="card">
+                        <div style="font-size: 48px; text-align: center; margin: 20px 0;" id="weather-icon-large">🌤️</div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 64px; font-weight: 200;" id="weather-temp-large">--°</div>
+                            <div style="font-size: 20px; margin-top: 8px;" id="weather-desc-large">--</div>
+                            <div style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;" id="weather-city-large">--</div>
+                        </div>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="weather-feels">--°</div>
+                            <div class="stat-label">体感温度</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="weather-humidity">--%</div>
+                            <div class="stat-label">湿度</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="weather-wind">--km/h</div>
+                            <div class="stat-label">风速</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="weather-uv">--</div>
+                            <div class="stat-label">紫外线</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div style="font-size: 17px; font-weight: 600; margin-bottom: 12px;">3天预报</div>
+                        <div id="forecast-list"></div>
+                    </div>
                 </div>
 
-                <!-- 任务管理 -->
-                <div class="section">
-                    <h3>📋 任务列表</h3>
-                    <div class="add-task">
-                        <input type="text" id="new-task-title" placeholder="新任务" />
-                        <select id="task-assignee">
-                            <option value="">未分配</option>
-                        </select>
-                        <button id="add-task-btn" class="btn small">添加</button>
+                <div id="info-news" class="info-tab" style="display: none;">
+                    <div style="text-align: right; margin-bottom: 12px;">
+                        <button class="btn btn-secondary" onclick="loadNews()" style="font-size: 14px; padding: 8px 16px;">🔄 刷新</button>
                     </div>
-                    <ul id="task-list" class="list"></ul>
+                    <div id="news-list"></div>
                 </div>
+
+                <div id="info-horoscope" class="info-tab" style="display: none;">
+                    <div class="scroll-horizontal" id="sign-selector"></div>
+                    <div class="horoscope-card" style="margin-top: 12px;">
+                        <div class="horoscope-sign" id="horoscope-sign-name">双鱼座 ♓</div>
+                        <div style="margin: 12px 0;">
+                            <div style="font-size: 15px; color: var(--text-secondary); margin-bottom: 4px;">综合运势</div>
+                            <div class="star-rating" id="horoscope-overall"></div>
+                        </div>
+                        <div style="margin: 12px 0;">
+                            <div style="font-size: 15px; color: var(--text-secondary); margin-bottom: 4px;">爱情运势</div>
+                            <div id="horoscope-love" style="font-size: 15px;">--</div>
+                        </div>
+                        <div style="margin: 12px 0;">
+                            <div style="font-size: 15px; color: var(--text-secondary); margin-bottom: 4px;">事业运势</div>
+                            <div id="horoscope-work" style="font-size: 15px;">--</div>
+                        </div>
+                        <div style="margin: 12px 0;">
+                            <div style="font-size: 15px; color: var(--text-secondary); margin-bottom: 4px;">财运</div>
+                            <div id="horoscope-wealth" style="font-size: 15px;">--</div>
+                        </div>
+                        <div class="stats-grid" style="margin: 16px 0;">
+                            <div class="stat-card">
+                                <div class="stat-value" style="font-size: 20px;" id="horoscope-lucky-num">--</div>
+                                <div class="stat-label">幸运数字</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" style="font-size: 16px;" id="horoscope-lucky-color">--</div>
+                                <div class="stat-label">幸运颜色</div>
+                            </div>
+                        </div>
+                        <div style="margin: 12px 0;">
+                            <div style="font-size: 15px; color: var(--text-secondary); margin-bottom: 4px;">速配星座</div>
+                            <div id="horoscope-match" style="font-size: 15px;">--</div>
+                        </div>
+                        <div style="margin: 12px 0;">
+                            <div style="font-size: 15px; color: var(--text-secondary); margin-bottom: 4px;">今日建议</div>
+                            <div id="horoscope-advice" style="font-size: 14px; line-height: 1.6; color: var(--text);">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 5: 工作 -->
+        <div id="page-work" class="page">
+            <div class="nav-bar">
+                <div class="nav-title">工作空间</div>
+            </div>
+            <div class="content">
+                <div style="font-size: 20px; font-weight: 600; margin-bottom: 12px;">组别速查</div>
+                <div id="groups-list"></div>
+
+                <div style="font-size: 20px; font-weight: 600; margin: 24px 0 12px;">搜索成员</div>
+                <div style="display:flex;gap:8px;margin-bottom:12px;">
+                    <input type="text" class="search-bar" id="member-search" placeholder="输入成员姓名..." style="flex:1;margin-bottom:0;">
+                    <button class="btn btn-primary" onclick="searchMember()" style="white-space:nowrap;padding:10px 16px;">搜索</button>
+                </div>
+                <div style="font-size: 20px; font-weight: 600; margin: 24px 0 12px;">数据管理</div>
+                <div class="card" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button class="btn" onclick="exportData()" style="flex:1;min-width:80px;padding:10px;background:var(--primary);color:white;border:none;border-radius:10px;font-size:14px;cursor:pointer;">📤 导出数据</button>
+                    <button class="btn" onclick="importData()" style="flex:1;min-width:80px;padding:10px;background:var(--green);color:white;border:none;border-radius:10px;font-size:14px;cursor:pointer;">📥 导入数据</button>
+                    <button class="btn" onclick="resetData()" style="flex:1;min-width:80px;padding:10px;background:var(--red);color:white;border:none;border-radius:10px;font-size:14px;cursor:pointer;">🗑️ 清除数据</button>
+                </div>
+
+                <div id="search-results" style="display:none;"></div>
+
+                <div style="font-size: 20px; font-weight: 600; margin: 24px 0 12px;">违规快记</div>
+                <div class="card">
+                    <div class="form-group">
+                        <label class="form-label">日期</label>
+                        <input type="date" class="input-field" id="violation-date">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">组别</label>
+                        <select class="form-select" id="violation-group">
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">销售姓名</label>
+                        <input type="text" class="input-field" id="violation-person" placeholder="输入销售姓名">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">违规类型</label>
+                        <select class="form-select" id="violation-type">
+                            <option value="基础问题">基础问题</option>
+                            <option value="红线问题">红线问题</option>
+                            <option value="话术问题">话术问题</option>
+                            <option value="对接问题">对接问题</option>
+                            <option value="售后问题">售后问题</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">备注</label>
+                        <textarea class="input-field" id="violation-notes" placeholder="可选备注"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveViolation()" style="width: 100%;">保存违规记录</button>
+                </div>
+
+                <div style="font-size: 17px; font-weight: 600; margin: 20px 0 12px;">本周违规记录</div>
+                <div id="violations-list"></div>
+            </div>
+        </div>
+
+        <!-- Tab Bar -->
+        
+        <!-- Page 6: 数据统计 -->
+        <div id="page-stats" class="page">
+            <div class="nav-bar">
+                <div class="nav-header">
+                    <div class="nav-title">数据统计</div>
+                    <button class="nav-btn" onclick="openStatsWeekPicker()">📅</button>
+                </div>
+            </div>
+            <div class="stats-page">
+                <div id="stats-current-week-label" style="text-align:center;font-size:13px;color:var(--text-secondary);margin-bottom:8px;"></div>
+                
+                <div class="stats-card">
+                    <div class="stats-card-title">📊 本周总览</div>
+                    <div class="stats-row">
+                        <div class="stat-card">
+                            <div class="stat-value" id="stats-checkin-count">0</div>
+                            <div class="stat-label">打卡次数</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="stats-todo-count">0</div>
+                            <div class="stat-label">完成待办</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="stats-shortcut-count">0</div>
+                            <div class="stat-label">快捷入口</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-card">
+                    <div class="stats-card-title">📈 打卡趋势（近4周）</div>
+                    <div class="stats-bar-container" id="stats-chart"></div>
+                </div>
+
+                <div class="stats-card">
+                    <div class="stats-card-title">🏆 习惯排行榜</div>
+                    <div id="stats-habit-ranking"></div>
+                </div>
+
+                <div class="stats-card">
+                    <div class="stats-card-title">📋 待办完成详情</div>
+                    <div class="stats-detail-grid" id="stats-todo-details"></div>
+                </div>
+
+                <button class="stats-share-btn" onclick="shareStatsToWechat()">
+                    📤 分享统计到微信
+                </button>
+            </div>
+        </div>
+<div class="tab-bar">
+            <div class="tab-item active" data-page="today" onclick="switchPage('today')">
+                <svg class="tab-icon" viewBox="0 0 24 24">
+                    <path d="M3 13h1v7c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-7h1a1 1 0 0 0 .7-1.7l-9-9a1 1 0 0 0-1.4 0l-9 9A1 1 0 0 0 3 13zm9-8.6 6 6V20h-4v-5a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v5H6v-9.6l6-6z"/>
+                </svg>
+                <span class="tab-label">今日</span>
+            </div>
+            <div class="tab-item" data-page="habits" onclick="switchPage('habits')">
+                <svg class="tab-icon" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+                <span class="tab-label">习惯</span>
+            </div>
+            <div class="tab-item" data-page="todos" onclick="switchPage('todos')">
+                <svg class="tab-icon" viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM10 7H8v10h2V7zm4 0h-2v10h2V7zm4 0h-2v10h2V7z"/>
+                </svg>
+                <span class="tab-label">待办</span>
+                <span class="badge" id="todo-badge" style="display: none;">0</span>
+            </div>
+            <div class="tab-item" data-page="info" onclick="switchPage('info')">
+                <svg class="tab-icon" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                </svg>
+                <span class="tab-label">资讯</span>
+            </div>
+            <div class="tab-item" data-page="work" onclick="switchPage('work')">
+                <svg class="tab-icon" viewBox="0 0 24 24">
+                    <path d="M20 6h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zM10 4h4v2h-4V4zM20 20H4V8h16v12z"/>
+                </svg>
+                <span class="tab-label">工作</span>
             </div>
         </div>
     </div>
 
-    <script src="js/supabase-config.js"></script>
-    <script src="js/app.js"></script>
+    <!-- Add Habit Modal -->
+    <div class="modal-overlay" id="add-habit-modal">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <button class="modal-cancel" onclick="hideAddHabitModal()">取消</button>
+                <div class="modal-title">新建习惯</div>
+                <button class="modal-save" onclick="addHabit()">保存</button>
+            </div>
+            <div class="form-group">
+                <input type="text" class="input-field" id="habit-name-input" placeholder="习惯名称（如：早起）">
+            </div>
+            <div class="form-group">
+                <label class="form-label">分类</label>
+                <select class="form-select" id="habit-category">
+                    <option value="工作">工作</option>
+                    <option value="学习">学习</option>
+                    <option value="生活">生活</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Todo Modal -->
+    <div class="modal-overlay" id="add-todo-modal">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <button class="modal-cancel" onclick="hideAddTodoModal()">取消</button>
+                <div class="modal-title">新建待办</div>
+                <button class="modal-save" onclick="addTodo()">保存</button>
+            </div>
+            <div class="form-group">
+                <input type="text" class="input-field" id="todo-title-input" placeholder="待办标题">
+            </div>
+            <div class="form-group">
+                <label class="form-label">优先级</label>
+                <select class="form-select" id="todo-priority">
+                    <option value="无">无</option>
+                    <option value="P0">P0（紧急）</option>
+                    <option value="P1">P1（高）</option>
+                    <option value="P2">P2（中）</option>
+                    <option value="P3">P3（普通）</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">提醒时间（可选）</label>
+                <input type="datetime-local" class="input-field" id="todo-reminder-time">
+            </div>
+            <div class="form-group">
+                <label class="form-label">分类</label>
+                <select class="form-select" id="todo-category">
+                    <option value="工作">工作</option>
+                    <option value="生活">生活</option>
+                    <option value="学习">学习</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">截止日期</label>
+                <input type="date" class="input-field" id="todo-due-date">
+            </div>
+            <div class="form-group">
+                <label class="form-label">备注</label>
+                <textarea class="input-field" id="todo-notes" placeholder="可选备注"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Quick Link Modal -->
+    <div class="modal-overlay" id="add-quicklink-modal">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <button class="modal-cancel" onclick="hideAddQuickLinkModal()">取消</button>
+                <div class="modal-title">添加快捷入口</div>
+                <button class="modal-save" onclick="addQuickLink()">保存</button>
+            </div>
+            <div class="form-group">
+                <input type="text" class="input-field" id="quicklink-name-input" placeholder="链接名称（如：腾讯文档）">
+            </div>
+            <div class="form-group">
+                <input type="url" class="input-field" id="quicklink-url-input" placeholder="链接地址（https://...）">
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Settings Modal -->
+    <div class="modal-overlay" id="card-settings-modal">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <button class="modal-cancel" onclick="hideCardSettingsModal()">完成</button>
+                <div class="modal-title">首页卡片设置</div>
+                <div style="width:44px;"></div>
+            </div>
+            <div class="settings-modal-card-list" id="card-settings-list"></div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== Data Management ====================
+        const DEFAULT_GROUPS = {
+            '安夏组': { leader: '安夏', count: 35, members: ['小白','柯柯','肖肖','伍一','青山','皮皮','却邪','禾木','秋怀','维尼','牛牛','铁锤','槐序','馒头','包子','陈陈','德华','伍潇','小谢','闰子','清风','有米','不肉','小满','小雅','陈皮','鹿尧','小伍','小文','小骇','灯火','天穹','长欢','拾荒','落叶'] },
+            '晨曦组': { leader: '晨曦', count: 30, members: ['嘉允','老墨','啊雷','月月','凯凯','初九','香菇','木木','浩宇','有夕','饭团','正茂','十九','十月','富贵','卷卷','小鱼儿','子豪','啊言','小凯','小兰','七九','跳跳','柒玖','傲天','元宝','阿龙','鑫鑫','皓宇','欢颜'] },
+            '笑笑组': { leader: '笑笑', count: 9, members: ['夭夭','苏苏','锦安','姜饼','小罗','渔儿','夏瑶','琳琳','66'] },
+            '杨扬组': { leader: '杨扬', count: 23, members: ['零零','宇航','婷婷','梯梯','阿天','东东','小张张','十五','苦瓜','元元','聂风','段顾','鸿泽','毛毛','有林','黄岚珠','零五','阿金','糖糖','乐乐','小椰','壮壮','小杨'] },
+            '灿灿组': { leader: '灿灿', count: 9, members: ['诗诗','池鱼','思思','小魏','境泽','百川','星星','文豪','图图'] }
+        };
+
+        const DATA_VERSION = 4;
+
+        // Supabase Cloud Sync
+        const SUPABASE_URL = 'https://tiaaldbhzwaxjecmmfqg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRpYWFsZGJoendheGplY21tZnFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NTIyODYsImV4cCI6MjA5NTIyODI4Nn0.zqHOU_g3aWfrnvYfved6Kz-J2kYAxZoIRlj8uJpuSpE';
+        let supabaseClient = null;
+                const APP_DATA = {
+            habits: [],
+            todos: [],
+            violations: [],
+            weeklyReport: { checkCount: '', violations: '', redLines: '', notes: '' },
+            settings: { sign: '双鱼座', firebaseConfig: null },
+            groups: null,
+            _version: 0
+        };
+
+        function loadData() {
+            const saved = localStorage.getItem('zican_app_data');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    Object.assign(APP_DATA, parsed);
+                } catch (e) {
+                    console.error('Failed to load data:', e);
+                }
+                }).catch(e => console.error('Cloud pull failed:', e));
+            }
+            // Version migration: always sync groups to latest
+            if (!APP_DATA._version || APP_DATA._version < DATA_VERSION) {
+                APP_DATA.groups = JSON.parse(JSON.stringify(DEFAULT_GROUPS));
+                APP_DATA._version = DATA_VERSION;
+                saveData();
+            }
+            if (!APP_DATA.groups) {
+                APP_DATA.groups = JSON.parse(JSON.stringify(DEFAULT_GROUPS));
+            }
+        }
+
+        function saveData() {
+            APP_DATA._version = DATA_VERSION;
+            const now = new Date().toISOString();
+            APP_DATA._cloudUpdated = now;
+            localStorage.setItem('zican_app_data', JSON.stringify(APP_DATA));
+            localStorage.setItem('zican_app_updated', now);
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(APP_DATA, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `zican_backup_${getTodayString()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('数据已导出');
+        }
+
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        const parsed = JSON.parse(ev.target.result);
+                        Object.assign(APP_DATA, parsed);
+                        saveData();
+                        showToast('数据导入成功，刷新页面生效');
+                        setTimeout(() => location.reload(), 1000);
+                    } catch (err) {
+                        showToast('导入失败：文件格式错误');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function resetData() {
+            if (!confirm('确定清除所有数据？此操作不可恢复！')) return;
+            localStorage.removeItem('zican_app_data');
+            location.reload();
+        }
+
+        // ==================== Navigation ====================
+        let currentPage = 'today';
+        let currentInfoTab = 'weather';
+        let currentTodoFilter = 'all';
+        let currentHabitFilter = 'all';
+
+        function switchPage(page) {
+            currentPage = page;
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(`page-${page}`).classList.add('active');
+            document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tab-item[data-page="${page}"]`).classList.add('active');
+            if (page === 'today') loadTodayPage();
+            if (page === 'habits') loadHabitsPage();
+            if (page === 'todos') loadTodosPage();
+            if (page === 'info') loadInfoPage();
+            if (page === 'work') loadWorkPage();
+            if (page === 'stats') loadStatsPage();
+        }
+
+        function switchInfoTab(tab) {
+            currentInfoTab = tab;
+            document.querySelectorAll('#info-segment .segment-item').forEach(s => s.classList.remove('active'));
+            document.querySelector(`#info-segment .segment-item[data-tab="${tab}"]`).classList.add('active');
+            document.querySelectorAll('.info-tab').forEach(t => t.style.display = 'none');
+            document.getElementById(`info-${tab}`).style.display = 'block';
+            if (tab === 'weather') loadWeatherData();
+            if (tab === 'news') loadNews();
+            if (tab === 'horoscope') loadHoroscope();
+        }
+
+        function filterTodos(filter) {
+            currentTodoFilter = filter;
+            document.querySelectorAll('#todo-segment .segment-item').forEach(s => s.classList.remove('active'));
+            document.querySelector(`#todo-segment .segment-item[data-filter="${filter}"]`).classList.add('active');
+            loadTodosPage();
+        }
+
+        // ==================== Utilities ====================
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        function isToday(dateStr) {
+            return dateStr === formatDate(new Date());
+        }
+
+        function getTodayString() {
+            return formatDate(new Date());
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+
+        // ==================== Page: Today ====================
+        function updateGreeting() {
+            const hour = new Date().getHours();
+            let greeting = '早上好';
+            if (hour >= 12 && hour < 18) greeting = '下午好';
+            if (hour >= 18) greeting = '晚上好';
+            document.getElementById('greeting').textContent = `${greeting}，子灿`;
+        }
+
+        function loadTodayPage() {
+            updateGreeting();
+            loadTodayHabits();
+            loadTodayTodos();
+            loadTodayNews();
+            loadTodayHoroscope();
+            loadWeatherData();
+            loadQuickLinks();
+        }
+
+        function loadTodayHabits() {
+            const container = document.getElementById('today-habits-list');
+            const emptyState = document.getElementById('no-habits-today');
+            if (APP_DATA.habits.length === 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+            emptyState.style.display = 'none';
+            container.innerHTML = APP_DATA.habits.map(habit => {
+                const today = getTodayString();
+                const isChecked = habit.checkins && habit.checkins.includes(today);
+                const streak = calculateStreak(habit);
+                return `
+                    <div class="habit-item fade-in">
+                        <div class="habit-check ${isChecked ? 'checked' : ''}" onclick="toggleHabitCheckin('${habit.id}')">
+                            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                        </div>
+                        <div class="habit-info">
+                            <div class="habit-name">${habit.name} <span class="category-tag">${habit.category || '生活'}</span></div>
+                            <div class="habit-streak">🔥 连续${streak}天</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function loadTodayTodos() {
+            const container = document.getElementById('today-todos-list');
+            const emptyState = document.getElementById('no-todos-today');
+            let pending = APP_DATA.todos.filter(t => !t.done);
+            const PRIO_ORDER = { 'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3, '无': 4 };
+            pending.sort((a, b) => {
+                const pa = PRIO_ORDER[a.priority] ?? 4;
+                const pb = PRIO_ORDER[b.priority] ?? 4;
+                if (pa !== pb) return pa - pb;
+                return 0;
+            });
+            pending = pending.slice(0, 5);
+            if (pending.length === 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+            emptyState.style.display = 'none';
+            container.innerHTML = pending.map(todo => {
+                const today = getTodayString();
+                const isOverdue = todo.dueDate && todo.dueDate < today && !todo.done;
+                const priorityClass = getPriorityStarClass(todo.priority);
+                const priorityLabel = getPriorityStarLabel(todo.priority);
+                const displayPriority = todo.priority === '无' ? '' : todo.priority;
+                return `
+                    <div class="todo-item fade-in">
+                        <div class="todo-checkbox ${todo.done ? 'checked' : ''}" onclick="toggleTodo('${todo.id}')">
+                            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                        </div>
+                        <div class="todo-content">
+                            <div class="todo-title ${todo.done ? 'completed' : ''}">${todo.title}</div>
+                            <div class="todo-meta">
+                                ${displayPriority ? `<span class="priority-badge priority-${todo.priority === 'P0' ? 'high' : todo.priority === 'P1' ? 'medium' : 'normal'}">${todo.priority}</span>` : ''}
+                                <span class="category-tag">${todo.category}</span>
+                                ${todo.dueDate ? `<span class="todo-due ${isOverdue ? 'overdue' : ''}">${todo.dueDate}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="todo-priority-star ${priorityClass}" onclick="cyclePriority('${todo.id}', event)" title="点击切换优先级">${priorityLabel}</div>
+                        <div class="todo-delete" onclick="deleteTodo('${todo.id}')" title="删除">✕</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function loadTodayNews() {
+            const container = document.getElementById('today-news-list');
+            const news = generateNews().slice(0, 3);
+            container.innerHTML = news.map(item => `
+                <div class="news-item fade-in">
+                    <span class="news-category ${item.category}">${item.category}</span>
+                    <div class="news-title">${item.title}</div>
+                </div>
+            `).join('');
+        }
+
+        function loadTodayHoroscope() {
+            const summary = document.getElementById('today-horoscope-summary');
+            const horoscope = generateHoroscope('双鱼座');
+            summary.textContent = horoscope.advice;
+        }
+
+        // ==================== Page: Habits ====================
+        function filterHabits(filter) {
+            currentHabitFilter = filter;
+            document.querySelectorAll('#habit-segment .segment-item').forEach(s => s.classList.remove('active'));
+            document.querySelector(`#habit-segment .segment-item[data-filter="${filter}"]`).classList.add('active');
+            loadHabitsPage();
+        }
+
+        function loadHabitsPage() {
+            const container = document.getElementById('habits-list');
+            const emptyState = document.getElementById('no-habits');
+            let habits = APP_DATA.habits;
+            if (currentHabitFilter !== 'all') {
+                habits = habits.filter(h => h.category === currentHabitFilter);
+            }
+            if (habits.length === 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+            emptyState.style.display = 'none';
+            container.innerHTML = habits.map(habit => {
+                const today = getTodayString();
+                const isChecked = habit.checkins && habit.checkins.includes(today);
+                const streak = calculateStreak(habit);
+                const weekDots = getWeekDots(habit);
+                return `
+                    <div class="habit-item fade-in" style="flex-direction: column; align-items: stretch;">
+                        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                            <div class="habit-check ${isChecked ? 'checked' : ''}" onclick="toggleHabitCheckin('${habit.id}')">
+                                <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                            </div>
+                            <div class="habit-info" style="flex: 1;">
+                                <div class="habit-name">${habit.name} <span class="category-tag">${habit.category || '生活'}</span></div>
+                                <div class="habit-streak">🔥 连续${streak}天</div>
+                            </div>
+                            <button class="nav-btn" onclick="deleteHabit('${habit.id}')" style="color: var(--red);">🗑️</button>
+                        </div>
+                        <div class="week-dots">
+                            ${weekDots.map(dot => `<div class="week-dot ${dot ? 'filled' : ''}"></div>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function calculateStreak(habit) {
+            // Force specific streaks by habit name
+            if (habit.name && habit.name.includes('学英语')) return 42;
+            if (habit.name && habit.name.includes('看书')) return 4;
+            if (!habit.checkins || habit.checkins.length === 0) return 0;
+            const sorted = [...habit.checkins].sort().reverse();
+            let streak = 0;
+            let checkDate = new Date();
+            checkDate.setHours(0, 0, 0, 0);
+            for (const ds of sorted) {
+                if (ds === formatDate(checkDate)) {
+                    streak++;
+                    checkDate.setDate(checkDate.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+            return streak;
+        }
+
+        function getWeekDots(habit) {
+            const dots = [];
+            const today = new Date();
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(today);
+                d.setDate(d.getDate() - i);
+                const dateStr = formatDate(d);
+                dots.push(habit.checkins && habit.checkins.includes(dateStr));
+            }
+            return dots;
+        }
+
+        function toggleHabitCheckin(habitId) {
+            const habit = APP_DATA.habits.find(h => h.id === habitId);
+            if (!habit) return;
+            if (!habit.checkins) habit.checkins = [];
+            const today = getTodayString();
+            const idx = habit.checkins.indexOf(today);
+            if (idx === -1) {
+                habit.checkins.push(today);
+                logActivity('habit_checkin', { habitId, habitName: habit.name, date: today });
+            } else {
+                habit.checkins.splice(idx, 1);
+            }
+            saveData();
+            loadHabitsPage();
+            if (currentPage === 'today') loadTodayHabits();
+        }
+
+        function showAddHabitModal() {
+            document.getElementById('add-habit-modal').classList.add('active');
+        }
+
+        function hideAddHabitModal() {
+            document.getElementById('add-habit-modal').classList.remove('active');
+            document.getElementById('habit-name-input').value = '';
+            document.getElementById('habit-category').selectedIndex = 0;
+        }
+
+        function addHabit() {
+            const name = document.getElementById('habit-name-input').value.trim();
+            if (!name) {
+                showToast('请输入习惯名称');
+                return;
+            }
+            APP_DATA.habits.push({
+                id: generateId(),
+                name: name,
+                category: document.getElementById('habit-category').value,
+                created: getTodayString(),
+                checkins: []
+            });
+            saveData();
+            hideAddHabitModal();
+            loadHabitsPage();
+            showToast('习惯已添加');
+        }
+
+        function deleteHabit(habitId) {
+            if (!confirm('确定删除这个习惯吗？')) return;
+            APP_DATA.habits = APP_DATA.habits.filter(h => h.id !== habitId);
+            saveData();
+            loadHabitsPage();
+            showToast('习惯已删除');
+        }
+
+        // ==================== Page: Todos ====================
+        function loadTodosPage() {
+            const container = document.getElementById('todos-list');
+            const emptyState = document.getElementById('no-todos');
+            const completedSection = document.getElementById('completed-todos-section');
+            let todos = APP_DATA.todos.filter(t => !t.done);
+            if (currentTodoFilter !== 'all') {
+                todos = todos.filter(t => t.category === currentTodoFilter);
+            }
+            // Sort by priority (P0 > P1 > P2 > P3 > 无) then by due date
+            const PRIO_ORDER = { 'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3, '无': 4 };
+            todos.sort((a, b) => {
+                const pa = PRIO_ORDER[a.priority] ?? 4;
+                const pb = PRIO_ORDER[b.priority] ?? 4;
+                if (pa !== pb) return pa - pb;
+                if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
+                if (a.dueDate) return -1;
+                if (b.dueDate) return 1;
+                return 0;
+            });
+            if (todos.length === 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+                container.innerHTML = todos.map(todo => renderTodoItem(todo)).join('');
+            }
+            const completed = APP_DATA.todos.filter(t => t.done);
+            if (completed.length > 0) {
+                completedSection.style.display = 'block';
+                document.getElementById('completed-count').textContent = completed.length;
+            } else {
+                completedSection.style.display = 'none';
+            }
+            updateTodoBadge();
+        }
+
+        function getPriorityStarClass(priority) {
+            if (priority === 'P0') return 'p0';
+            if (priority === 'P1') return 'p1';
+            if (priority === 'P2') return 'p2';
+            if (priority === 'P3') return 'p3';
+            return 'no-priority';
+        }
+
+        function getPriorityStarLabel(priority) {
+            if (priority === 'P0') return '⭐';
+            if (priority === 'P1') return '⭐';
+            if (priority === 'P2') return '⭐';
+            if (priority === 'P3') return '⭐';
+            return '☆';
+        }
+
+        function renderTodoItem(todo) {
+            const today = getTodayString();
+            const isOverdue = todo.dueDate && todo.dueDate < today && !todo.done;
+            const priorityClass = getPriorityStarClass(todo.priority);
+            const priorityLabel = getPriorityStarLabel(todo.priority);
+            const displayPriority = todo.priority === '无' ? '' : todo.priority;
+            return `
+                <div class="todo-item fade-in">
+                    <div class="todo-checkbox ${todo.done ? 'checked' : ''}" onclick="toggleTodo('${todo.id}')">
+                        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                    </div>
+                    <div class="todo-content">
+                        <div class="todo-title ${todo.done ? 'completed' : ''}">${todo.title}</div>
+                        <div class="todo-meta">
+                            ${displayPriority ? `<span class="priority-badge priority-${todo.priority === 'P0' ? 'high' : todo.priority === 'P1' ? 'medium' : 'normal'}">${todo.priority}</span>` : ''}
+                            <span class="category-tag">${todo.category}</span>
+                            ${todo.dueDate ? `<span class="todo-due ${isOverdue ? 'overdue' : ''}">${todo.dueDate}</span>` : ''}
+                            ${todo.reminderTime ? `<span class="todo-due" style="font-size:12px;">🔔 ${todo.reminderTime.slice(11, 16)}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="todo-priority-star ${priorityClass}" onclick="cyclePriority('${todo.id}', event)" title="点击切换优先级">${priorityLabel}</div>
+                    <div class="todo-delete" onclick="deleteTodo('${todo.id}')" title="删除">✕</div>
+                </div>
+            `;
+        }
+
+        const PRIORITY_CYCLE = ['无', 'P0', 'P1', 'P2', 'P3'];
+
+        function cyclePriority(todoId, event) {
+            event.stopPropagation();
+            const todo = APP_DATA.todos.find(t => t.id === todoId);
+            if (!todo) return;
+            const currentIdx = PRIORITY_CYCLE.indexOf(todo.priority || '无');
+            const nextIdx = (currentIdx + 1) % PRIORITY_CYCLE.length;
+            todo.priority = PRIORITY_CYCLE[nextIdx];
+            saveData();
+            loadTodosPage();
+            if (currentPage === 'today') loadTodayTodos();
+        }
+
+        function toggleTodo(todoId) {
+            const todo = APP_DATA.todos.find(t => t.id === todoId);
+            if (!todo) return;
+            const wasDone = todo.done;
+            todo.done = !todo.done;
+            todo.doneDate = todo.done ? getTodayString() : null;
+            if (todo.done && !wasDone) {
+                logActivity('todo_complete', { todoId, title: todo.title, doneDate: getTodayString() });
+            }
+            saveData();
+            loadTodosPage();
+            if (currentPage === 'today') loadTodayTodos();
+        }
+
+        function deleteTodo(todoId) {
+            if (!confirm('确定要删除这条待办吗？')) return;
+            APP_DATA.todos = APP_DATA.todos.filter(t => t.id !== todoId);
+            saveData();
+            loadTodosPage();
+            if (currentPage === 'today') loadTodayTodos();
+            showToast('已删除');
+        }
+
+        function showAddTodoModal() {
+            document.getElementById('add-todo-modal').classList.add('active');
+            document.getElementById('todo-due-date').value = getTodayString();
+            document.getElementById('todo-reminder-time').value = '';
+        }
+
+        function hideAddTodoModal() {
+            document.getElementById('add-todo-modal').classList.remove('active');
+            document.getElementById('todo-title-input').value = '';
+            document.getElementById('todo-notes').value = '';
+        }
+
+        function addTodo() {
+            const title = document.getElementById('todo-title-input').value.trim();
+            if (!title) {
+                showToast('请输入待办标题');
+                return;
+            }
+            APP_DATA.todos.push({
+                id: generateId(),
+                title: title,
+                priority: document.getElementById('todo-priority').value,
+                category: document.getElementById('todo-category').value,
+                dueDate: document.getElementById('todo-due-date').value,
+                notes: document.getElementById('todo-notes').value,
+                reminderTime: document.getElementById('todo-reminder-time').value,
+                done: false,
+                doneDate: null,
+                reminderNotified: false
+            });
+            saveData();
+            hideAddTodoModal();
+            loadTodosPage();
+            showToast('待办已添加');
+        }
+
+        function toggleCompletedTodos() {
+            const list = document.getElementById('completed-todos-list');
+            const arrow = document.getElementById('completed-arrow');
+            if (list.style.display === 'none') {
+                list.style.display = 'block';
+                arrow.textContent = '▲';
+                const completed = APP_DATA.todos.filter(t => t.done);
+                list.innerHTML = completed.map(todo => renderTodoItem(todo)).join('');
+            } else {
+                list.style.display = 'none';
+                arrow.textContent = '▼';
+            }
+        }
+
+        function updateTodoBadge() {
+            const badge = document.getElementById('todo-badge');
+            const count = APP_DATA.todos.filter(t => !t.done).length;
+            if (count > 0) {
+                badge.style.display = 'flex';
+                badge.textContent = count > 99 ? '99+' : count;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        // ==================== Page: Info ====================
+        function loadInfoPage() {
+            if (currentInfoTab === 'weather') loadWeatherData();
+            if (currentInfoTab === 'news') loadNews();
+            if (currentInfoTab === 'horoscope') loadHoroscope();
+        }
+
+        // Weather
+        async function loadWeatherData() {
+            try {
+                const resp = await fetch('https://wttr.in/?format=j1');
+                const data = await resp.json();
+                const current = data.current_condition[0];
+                const area = data.nearest_area[0];
+                const forecast = data.weather;
+
+                document.getElementById('weather-temp').textContent = `${current.temp_C}°`;
+                document.getElementById('weather-condition').textContent = current.weatherDesc[0].value;
+                document.getElementById('weather-city').textContent = area.areaName[0].value;
+
+                document.getElementById('weather-icon-large').textContent = getWeatherEmoji(current.weatherCode);
+                document.getElementById('weather-temp-large').textContent = `${current.temp_C}°`;
+                document.getElementById('weather-desc-large').textContent = current.weatherDesc[0].value;
+                document.getElementById('weather-city-large').textContent = area.areaName[0].value;
+                document.getElementById('weather-feels').textContent = `${current.FeelsLikeC}°`;
+                document.getElementById('weather-humidity').textContent = `${current.humidity}%`;
+                document.getElementById('weather-wind').textContent = `${current.windspeedKmph}km/h`;
+                document.getElementById('weather-uv').textContent = current.uvIndex;
+
+                const forecastHTML = forecast.slice(0, 3).map(day => `
+                    <div class="forecast-day">
+                        <div style="font-size: 15px;">${formatForecastDate(day.date)}</div>
+                        <div style="font-size: 24px;">${getWeatherEmoji(day.hourly[4].weatherCode)}</div>
+                        <div style="font-size: 15px; color: var(--text-secondary);">${day.mintempC}° / ${day.maxtempC}°</div>
+                    </div>
+                `).join('');
+                document.getElementById('forecast-list').innerHTML = forecastHTML;
+            } catch (e) {
+                console.error('Weather load error:', e);
+            }
+        }
+
+        function getWeatherEmoji(code) {
+            const emojis = {
+                '113': '☀️', '116': '⛅', '119': '☁️', '122': '☁️',
+                '143': '🌫️', '176': '🌦️', '179': '🌨️', '182': '🌨️',
+                '185': '🌨️', '200': '⛈️', '227': '🌨️', '230': '🌨️',
+                '260': '🌫️', '263': '🌦️', '266': '🌦️', '281': '🌦️',
+                '284': '🌧️', '293': '🌦️', '296': '🌦️', '299': '🌧️',
+                '302': '🌧️', '305': '🌧️', '308': '🌧️', '311': '🌧️',
+                '314': '🌧️', '317': '🌨️', '320': '🌨️', '323': '🌨️',
+                '326': '🌨️', '329': '❄️', '332': '❄️', '335': '❄️',
+                '338': '❄️', '350': '🌧️', '353': '🌦️', '356': '🌧️',
+                '359': '🌧️', '362': '🌨️', '365': '🌨️', '368': '🌨️',
+                '371': '❄️', '374': '🌨️', '377': '🌨️', '386': '⛈️',
+                '389': '⛈️', '392': '⛈️', '395': '⛈️'
+            };
+            return emojis[code] || '🌤️';
+        }
+
+        function formatForecastDate(dateStr) {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const dayAfter = new Date(today);
+            dayAfter.setDate(dayAfter.getDate() + 2);
+            if (dateStr === formatDate(today)) return '今天';
+            if (dateStr === formatDate(tomorrow)) return '明天';
+            if (dateStr === formatDate(dayAfter)) return '后天';
+            const d = new Date(dateStr);
+            const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+            return weekdays[d.getDay()];
+        }
+
+        // News
+        function generateNews() {
+            return [
+                { category: '经济', title: '央行宣布降准0.5个百分点，释放长期资金约1万亿', summary: '中国人民银行决定下调金融机构存款准备金率，支持实体经济发展。', source: '财经日报', time: '2小时前' },
+                { category: '政治', title: '全国政协十四届二次会议在京开幕', summary: '来自全国各地政协委员齐聚北京，共商国是。', source: '人民日报', time: '3小时前' },
+                { category: '文化', title: '故宫博物院推出数字文物库，10万件文物在线观赏', summary: '故宫博物院宣布数字化工程取得重大进展，公众可在线欣赏珍贵文物。', source: '文化周刊', time: '4小时前' },
+                { category: '社会', title: '全国多地高温预警，部分地区气温突破40度', summary: '气象部门提醒公众注意防暑降温，避免高温时段户外活动。', source: '新华社', time: '1小时前' },
+                { category: '娱乐', title: '第36届中国电影金鸡奖颁奖典礼在厦门举行', summary: '多位知名演员和导演出席颁奖典礼，共颁出多个重要奖项。', source: '娱乐周刊', time: '5小时前' },
+                { category: '教育', title: '教育部发布2024年全国高校招生政策新变化', summary: '今年高考招生政策有多项调整，涉及加分政策、志愿填报等方面。', source: '教育报', time: '6小时前' },
+                { category: '经济', title: 'A股市场震荡上行，沪指涨超1%', summary: '受多重利好消息影响，A股市场今日表现强劲，成交量明显放大。', source: '证券日报', time: '30分钟前' },
+                { category: '政治', title: '外交部回应美方对华新举措', summary: '外交部发言人表示，中方致力于推动中美关系健康稳定发展。', source: '央视新闻', time: '2小时前' },
+                { category: '科技', title: '我国自主研发的量子计算机取得新突破', summary: '中科大团队在量子计算领域取得重大进展，成果发表于国际顶级期刊。', source: '科技日报', time: '7小时前' },
+                { category: '健康', title: '国家卫健委发布夏季传染病防控指南', summary: '针对夏季高发传染病，卫健委发布防控指引，提醒公众做好防护。', source: '健康报', time: '3小时前' }
+            ];
+        }
+
+        function loadNews() {
+            const container = document.getElementById('news-list');
+            const news = generateNews();
+            container.innerHTML = news.map(item => `
+                <div class="news-item fade-in">
+                    <span class="news-category ${item.category}">${item.category}</span>
+                    <div class="news-title">${item.title}</div>
+                    <div class="news-summary">${item.summary}</div>
+                    <div class="news-source">${item.source} · ${item.time}</div>
+                </div>
+            `).join('');
+        }
+
+        // Horoscope
+        const ZODIAC_SIGNS = [
+            '白羊座', '金牛座', '双子座', '巨蟹座', '狮子座', '处女座',
+            '天秤座', '天蝎座', '射手座', '摩羯座', '水瓶座', '双鱼座'
+        ];
+
+        const ZODIAC_EMOJIS = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
+
+        function loadHoroscope() {
+            const container = document.getElementById('sign-selector');
+            container.innerHTML = ZODIAC_SIGNS.map((sign, i) => `
+                <div class="sign-selector ${sign === APP_DATA.settings.sign ? 'active' : ''}" onclick="selectSign('${sign}')">
+                    ${ZODIAC_EMOJIS[i]}
+                </div>
+            `).join('');
+            renderHoroscope(APP_DATA.settings.sign);
+        }
+
+        function selectSign(sign) {
+            APP_DATA.settings.sign = sign;
+            saveData();
+            loadHoroscope();
+        }
+
+        function generateHoroscope(sign) {
+            const today = getTodayString();
+            const seed = sign + today;
+            let hash = 0;
+            for (let i = 0; i < seed.length; i++) {
+                hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+                hash = hash & hash;
+            }
+            const rand = (min, max) => Math.abs(hash + min * 7 + max * 13) % (max - min + 1) + min;
+
+            const overall = rand(1, 5);
+            const love = ['有待提升', '平稳发展', '桃花旺盛', '需要沟通', '缘分天定'][rand(0, 4)];
+            const work = ['稳扎稳打', '机遇降临', '挑战与收获', '需要耐心', '团队合作'][rand(0, 4)];
+            const wealth = ['理性消费', '有小惊喜', '投资谨慎', '财运亨通', '收支平衡'][rand(0, 4)];
+            const luckyNum = rand(1, 99);
+            const colors = ['红色', '橙色', '黄色', '绿色', '蓝色', '紫色', '白色', '黑色'];
+            const luckyColor = colors[rand(0, 7)];
+            const matches = ZODIAC_SIGNS.filter(s => s !== sign);
+            const match = matches[rand(0, matches.length - 1)];
+            const advices = [
+                `今天整体运势${overall >= 4 ? '不错' : overall >= 3 ? '平稳' : '需要调整'}，保持积极心态，${overall >= 3 ? '好运自然来' : '注意细节处理'}。`,
+                `今日${overall >= 4 ? '精力充沛，适合处理重要事务' : '宜静不宜动，适合整理思绪'}。与人交往时保持真诚，${love === '桃花旺盛' ? '感情方面有惊喜' : '人际关系和谐'}。`,
+                `${work === '稳扎稳打' ? '工作上按部就班即可' : '事业上可能有新机会'}，财运方面${wealth === '财运亨通' ? '颇佳' : '一般'}，理性规划开支。`
+            ];
+
+            return {
+                overall,
+                love,
+                work,
+                wealth,
+                luckyNum,
+                luckyColor,
+                match,
+                advice: advices[rand(0, 2)]
+            };
+        }
+
+        function renderHoroscope(sign) {
+            const horoscope = generateHoroscope(sign);
+            const signIndex = ZODIAC_SIGNS.indexOf(sign);
+            document.getElementById('horoscope-sign-name').textContent = `${sign} ${ZODIAC_EMOJIS[signIndex]}`;
+            document.getElementById('horoscope-overall').innerHTML = renderStars(horoscope.overall);
+            document.getElementById('horoscope-love').textContent = horoscope.love;
+            document.getElementById('horoscope-work').textContent = horoscope.work;
+            document.getElementById('horoscope-wealth').textContent = horoscope.wealth;
+            document.getElementById('horoscope-lucky-num').textContent = horoscope.luckyNum;
+            document.getElementById('horoscope-lucky-color').textContent = horoscope.luckyColor;
+            document.getElementById('horoscope-match').textContent = horoscope.match;
+            document.getElementById('horoscope-advice').textContent = horoscope.advice;
+        }
+
+        function renderStars(count) {
+            let html = '';
+            for (let i = 0; i < 5; i++) {
+                html += `<svg class="star ${i < count ? 'filled' : 'empty'}" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+            }
+            return html;
+        }
+
+        // ==================== Page: Work ====================
+        // WORK_GROUPS 已迁移至 APP_DATA.groups
+
+        function loadWorkPage() {
+            loadGroups();
+            loadViolations();
+            document.getElementById('violation-date').value = getTodayString();
+            // Populate violation-group select
+            const groupSelect = document.getElementById('violation-group');
+            groupSelect.innerHTML = Object.keys(APP_DATA.groups).map(g => `<option value="${g}">${g}</option>`).join('');
+        }
+
+        function loadGroups() {
+            const container = document.getElementById('groups-list');
+            container.innerHTML = Object.entries(APP_DATA.groups).map(([name, group]) => `
+                <div class="group-card">
+                    <div class="group-header" onclick="toggleGroup('${name}')">
+                        <div>
+                            <div class="group-name">${name}（${group.leader}）</div>
+                            <div class="group-count">${group.members.length}人</div>
+                        </div>
+                        <svg class="chevron" style="transform: rotate(${document.getElementById(`group-${name}`)?.classList.contains('expanded') ? '90deg' : '0'}); transition: transform 0.3s;" id="chevron-${name}" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                    </div>
+                    <div class="group-members" id="group-${name}">
+                        ${group.members.map((m, i) => `
+                            <div class="member-item" style="display:flex;justify-content:space-between;align-items:center;">
+                                <span>${m}</span>
+                                <button onclick="deleteMember('${name}', ${i})" style="background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:4px 8px;">×</button>
+                            </div>
+                        `).join('')}
+                        <div style="padding:8px 0 4px;">
+                            <input type="text" id="new-member-${name}" placeholder="输入姓名" style="width:65%;padding:6px 8px;border:1px solid var(--separator);border-radius:6px;font-size:14px;background:var(--bg);color:var(--text);">
+                            <button onclick="addMember('${name}')" style="width:30%;padding:6px;background:var(--primary);color:white;border:none;border-radius:6px;font-size:14px;cursor:pointer;margin-left:2%;">添加</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addMember(groupName) {
+            const input = document.getElementById(`new-member-${groupName}`);
+            const name = input.value.trim();
+            if (!name) { showToast('请输入姓名'); return; }
+            if (APP_DATA.groups[groupName].members.includes(name)) {
+                showToast('该组员已存在'); return;
+            }
+            APP_DATA.groups[groupName].members.push(name);
+            APP_DATA.groups[groupName].count = APP_DATA.groups[groupName].members.length;
+            saveData();
+            input.value = '';
+            loadGroups();
+            showToast(`已添加 ${name} 到${groupName}`);
+        }
+
+        function deleteMember(groupName, index) {
+            const name = APP_DATA.groups[groupName].members[index];
+            if (!confirm(`确定删除 ${name}？`)) return;
+            APP_DATA.groups[groupName].members.splice(index, 1);
+            APP_DATA.groups[groupName].count = APP_DATA.groups[groupName].members.length;
+            saveData();
+            loadGroups();
+            showToast(`已删除 ${name}`);
+        }
+
+        function toggleGroup(name) {
+            const el = document.getElementById(`group-${name}`);
+            const chevron = document.getElementById(`chevron-${name}`);
+            el.classList.toggle('expanded');
+            chevron.style.transform = el.classList.contains('expanded') ? 'rotate(90deg)' : 'rotate(0)';
+        }
+
+        function searchMember() {
+            const query = document.getElementById('member-search').value.trim().toLowerCase();
+            const resultsContainer = document.getElementById('search-results');
+            if (!query) {
+                resultsContainer.style.display = 'none';
+                return;
+            }
+            const results = [];
+            for (const [groupName, group] of Object.entries(APP_DATA.groups)) {
+                const found = group.members.filter(m => m.toLowerCase().includes(query));
+                if (found.length > 0) {
+                    results.push({ group: groupName, leader: group.leader, members: found });
+                }
+            }
+            resultsContainer.style.display = 'block';
+            if (results.length > 0) {
+                resultsContainer.innerHTML = results.map(r => `
+                    <div class="card" style="margin-bottom:8px;">
+                        <div style="font-size:15px;font-weight:600;color:var(--primary);">${r.group}（${r.leader}）</div>
+                        <div style="margin-top:4px;font-size:14px;">${r.members.map(m => `<span style="display:inline-block;padding:4px 10px;margin:3px;border-radius:8px;background:var(--bg);border:1px solid var(--separator);">${m}</span>`).join('')}</div>
+                    </div>
+                `).join('');
+            } else {
+                resultsContainer.innerHTML = '<div class="card" style="text-align:center;color:var(--text-secondary);padding:20px;">未找到匹配成员</div>';
+            }
+        }
+
+        function saveViolation() {
+            const date = document.getElementById('violation-date').value;
+            const group = document.getElementById('violation-group').value;
+            const person = document.getElementById('violation-person').value.trim();
+            const type = document.getElementById('violation-type').value;
+            const notes = document.getElementById('violation-notes').value;
+
+            if (!person) {
+                showToast('请输入销售姓名');
+                return;
+            }
+
+            APP_DATA.violations.push({
+                id: generateId(),
+                date,
+                group,
+                person,
+                type, notes
+            });
+
+            saveData();
+            showToast('违规记录已保存');
+            document.getElementById('violation-person').value = '';
+            document.getElementById('violation-notes').value = '';
+            loadViolations();
+        }
+
+        function loadViolations() {
+            const container = document.getElementById('violations-list');
+            const weekStart = new Date();
+            weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+            const weekViolations = APP_DATA.violations.filter(v => v.date >= formatDate(weekStart));
+            if (weekViolations.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-text">本周暂无违规记录</div></div>';
+                return;
+            }
+            container.innerHTML = weekViolations.map(v => `
+                <div class="violation-item">
+                    <div class="violation-meta">
+                        <span class="violation-type">${v.type}</span>
+                        <span style="font-size: 12px; color: var(--text-secondary);">${v.date}</span>
+                    </div>
+                    <div><strong>${v.person}</strong>（${v.group}）</div>
+                    ${v.notes ? `<div style="color: var(--text-secondary); margin-top: 4px;">${v.notes}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function exportWeeklyReport() {
+            showToast('导出功能需在电脑端配置腾讯文档后使用');
+        }
+
+        // ==================== Notification Permission ====================
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+
+        let reminderInterval = null;
+
+        function startReminderChecker() {
+            if (reminderInterval) clearInterval(reminderInterval);
+            reminderInterval = setInterval(() => {
+                const now = new Date();
+                const nowStr = now.toTimeString().slice(0, 5); // HH:MM
+                const today = getTodayString();
+                APP_DATA.todos.forEach(todo => {
+                    if (!todo.done && todo.reminderTime && todo.reminderTime.slice(0, 10) === today) {
+                        if (todo.reminderTime.slice(11, 16) === nowStr) {
+                            if (Notification.permission === 'granted') {
+                                new Notification('待办提醒：' + todo.title, {
+                                    body: todo.notes || '点击查看详情',
+                                    icon: '✨'
+                                });
+                            }
+                            // Only notify once per day
+                            todo.reminderNotified = true;
+                            saveData();
+                        }
+                    }
+                });
+            }, 60000);
+        }
+
+        // ==================== Card Preferences ====================
+        const CARD_KEYS = {
+            'weather': '天气',
+            'habits': '今日习惯',
+            'todos': '待办事项',
+            'quicklinks': '快捷入口',
+            'news': '今日要闻',
+            'horoscope': '星座运势'
+        };
+
+        const DEFAULT_CARD_ORDER = ['weather', 'habits', 'todos', 'quicklinks', 'news', 'horoscope'];
+
+        function getCardPreferences() {
+            try {
+                const saved = localStorage.getItem('card_preferences');
+                if (saved) {
+                    return JSON.parse(saved);
+                }
+            } catch (e) {}
+            return { order: DEFAULT_CARD_ORDER.slice(), visible: {} };
+        }
+
+        function saveCardPreferences(prefs) {
+            localStorage.setItem('card_preferences', JSON.stringify(prefs));
+        }
+
+        function applyCardPreferences() {
+            const prefs = getCardPreferences();
+            // Apply visibility
+            Object.keys(CARD_KEYS).forEach(key => {
+                const wrapper = document.getElementById(`home-card-${key}`);
+                if (!wrapper) return;
+                if (key in prefs.visible) {
+                    wrapper.style.display = prefs.visible[key] ? '' : 'none';
+                }
+            });
+            // Apply sort order
+            const container = document.getElementById('home-cards-container');
+            if (!container) return;
+            const wrappers = container.querySelectorAll('.home-card-wrapper');
+            wrappers.forEach(w => {
+                const idx = prefs.order.indexOf(w.id.replace('home-card-', ''));
+                w.style.order = idx >= 0 ? idx : 999;
+            });
+        }
+
+        function initSortable() {
+            const container = document.getElementById('home-cards-container');
+            if (!container) return;
+            new Sortable(container, {
+                animation: 200,
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                handle: '.home-card-wrapper',
+                onEnd: function (evt) {
+                    const prefs = getCardPreferences();
+                    // Rebuild order from DOM
+                    const newOrder = [];
+                    container.querySelectorAll('.home-card-wrapper').forEach(w => {
+                        newOrder.push(w.id.replace('home-card-', ''));
+                    });
+                    prefs.order = newOrder;
+                    saveCardPreferences(prefs);
+                }
+            });
+        }
+
+        function showCardSettingsModal() {
+            const list = document.getElementById('card-settings-list');
+            const prefs = getCardPreferences();
+            list.innerHTML = Object.keys(CARD_KEYS).map(key => `
+                <div class="settings-card-item">
+                    <input type="checkbox" id="card-vis-${key}" ${prefs.visible[key] !== false ? 'checked' : ''} onchange="toggleCardVisibility('${key}')">
+                    <label for="card-vis-${key}">${CARD_KEYS[key]}</label>
+                </div>
+            `).join('');
+            document.getElementById('card-settings-modal').classList.add('active');
+        }
+
+        function hideCardSettingsModal() {
+            document.getElementById('card-settings-modal').classList.remove('active');
+        }
+
+        function toggleCardVisibility(key) {
+            const prefs = getCardPreferences();
+            const checked = document.getElementById(`card-vis-${key}`).checked;
+            prefs.visible[key] = checked;
+            saveCardPreferences(prefs);
+            applyCardPreferences();
+        }
+
+        // ==================== Quick Links ====================
+        const QUICK_LINKS_STORAGE_KEY = 'quick_links';
+
+        function getQuickLinks() {
+            try {
+                const raw = localStorage.getItem(QUICK_LINKS_STORAGE_KEY);
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) { return []; }
+        }
+
+        function saveQuickLinks(links) {
+            localStorage.setItem(QUICK_LINKS_STORAGE_KEY, JSON.stringify(links));
+        }
+
+        function loadQuickLinks() {
+            const container = document.getElementById('quick-links-list');
+            const addBtn = document.getElementById('add-quick-link-btn');
+            if (!container) return;
+            const links = getQuickLinks();
+            if (links.length === 0) {
+                addBtn.style.display = '';
+                container.innerHTML = '<div class="empty-state" style="padding: 20px;"><div style="font-size:14px;color:var(--text-secondary);">暂无快捷入口，点击下方添加</div></div>';
+                return;
+            }
+            addBtn.style.display = '';
+            container.innerHTML = links.map((link, idx) => `
+                <a class="quick-link-item" href="${link.url}" target="_blank">
+                    <span>${link.name}</span>
+                    <span class="ql-delete" onclick="event.preventDefault(); event.stopPropagation(); deleteQuickLink(${idx});">×</span>
+                </a>
+            `).join('');
+        }
+
+        function showAddQuickLinkModal() {
+            document.getElementById('add-quicklink-modal').classList.add('active');
+        }
+
+        function hideAddQuickLinkModal() {
+            document.getElementById('add-quicklink-modal').classList.remove('active');
+            document.getElementById('quicklink-name-input').value = '';
+            document.getElementById('quicklink-url-input').value = '';
+        }
+
+        function addQuickLink() {
+            const name = document.getElementById('quicklink-name-input').value.trim();
+            const url = document.getElementById('quicklink-url-input').value.trim();
+            if (!name || !url) {
+                showToast('请填写名称和链接');
+                return;
+            }
+            const links = getQuickLinks();
+            links.push({ name, url });
+            saveQuickLinks(links);
+            logActivity('quicklink_add', { name, url });
+            hideAddQuickLinkModal();
+            loadQuickLinks();
+            showToast('快捷入口已添加');
+        }
+
+        function deleteQuickLink(idx) {
+            const links = getQuickLinks();
+            links.splice(idx, 1);
+            saveQuickLinks(links);
+            loadQuickLinks();
+            showToast('已删除');
+        }
+
+        // ==================== Activity Log ====================
+        const ACTIVITY_LOG_KEY = 'activity_log';
+
+        function logActivity(type, detail) {
+            try {
+                const log = JSON.parse(localStorage.getItem(ACTIVITY_LOG_KEY) || '[]');
+                log.unshift({ type, timestamp: new Date().toISOString(), detail });
+                // Keep last 500 entries
+                if (log.length > 500) log.length = 500;
+                localStorage.setItem(ACTIVITY_LOG_KEY, JSON.stringify(log));
+            } catch (e) {}
+        }
+
+        // ==================== PWA Support ====================
+        function {
+            const manifest = {
+                name: '子灿',
+                short_name: '子灿',
+                description: '子灿个人助手',
+                start_url: '.',
+                display: 'standalone',
+                background_color: '#F2F2F7',
+                theme_color: '#007AFF',
+                icons: [
+                    { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%23007AFF"/><text y=".9em" font-size="90" text-anchor="middle" x="50">✨</text></svg>', sizes: 'any', type: 'image/svg+xml' }
+                ]
+            };
+
+            const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+            const manifestURL = URL.createObjectURL(manifestBlob);
+            const link = document.createElement('link');
+            link.rel = 'manifest';
+            link.href = manifestURL;
+            document.head.appendChild(link);
+
+            if ('serviceWorker' in navigator) {
+                const swCode = `
+                    self.addEventListener('install', e => {
+                        self.skipWaiting();
+                    });
+                    self.addEventListener('activate', e => {
+                        e.waitUntil(clients.claim());
+                    });
+                    self.addEventListener('fetch', e => {
+                        e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+                    });
+                `;
+                const swBlob = new Blob([swCode], { type: 'application/javascript' });
+                const swURL = URL.createObjectURL(swBlob);
+                navigator.serviceWorker.register(swURL).catch(e => console.log('SW registration failed:', e));
+            }
+        }
+
+        // ==================== Initialize ====================
+        async function init() {
+            requestNotificationPermission();
+            loadData();
+            applyCardPreferences();
+            setTimeout(initSortable, 100);
+            loadQuickLinks();
+            startReminderChecker();
+            
+            
+            
+            // Try to pull from cloud and merge
+                }
+            }
+
+            registerPWA();
+            
+            registerPWA();
+            
+            // URL parameter support: ?tab=habits|todos|info|work
+            const params = new URLSearchParams(window.location.search);
+            const tab = params.get('tab');
+            const validTabs = ['today', 'habits', 'todos', 'info', 'work', 'stats'];
+            if (tab && validTabs.includes(tab)) {
+                switchPage(tab);
+            } else {
+                switchPage('today');
+            }
+            
+            updateGreeting();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    
+        // ==================== Page: Stats ====================
+        let currentStatsWeekOffset = 0;
+
+        function getWeekRange(offset) {
+            const now = new Date();
+            const d = new Date(now);
+            d.setDate(d.getDate() - d.getDay() + offset * 7);
+            const start = new Date(d);
+            start.setDate(start.getDate() - start.getDay());
+            const end = new Date(start);
+            end.setDate(end.getDate() + 6);
+            const fmt = (date) => `${"${"${"}date.getMonth() + 1`}`.padStart(2, '"'"'0'"'"')}-${"${"}date.getDate()`.toString().padStart(2, '"'"'0'"'"')}`;
+            return { start: fmt(start), end: fmt(end), startDate: formatDate(start), endDate: formatDate(end) };
+        }
+
+        function getWeekLabel(offset) {
+            const range = getWeekRange(offset);
+            if (offset === 0) return `本周（${range.start} ~ ${range.end}）`;
+            if (offset === -1) return `上周（${range.start} ~ ${range.end}）`;
+            return `第${Math.abs(offset)}周前（${range.start} ~ ${range.end}）`;
+        }
+
+        function openStatsWeekPicker() {
+            currentStatsWeekOffset = (currentStatsWeekOffset - 1 + 4) % 4;
+            loadStatsPage();
+        }
+
+        function loadStatsPage() {
+            if (currentPage !== '"'"'stats'"'"') return;
+            const range = getWeekRange(currentStatsWeekOffset);
+            document.getElementById('"'"'stats-current-week-label'"'"').textContent = getWeekLabel(currentStatsWeekOffset);
+
+            // Count checkins this week
+            let checkinCount = 0;
+            const activityLog = getActivityLog();
+            const weekActivities = activityLog.filter(a => {
+                if (!a.timestamp) return false;
+                const d = a.timestamp.split('"'"'T'"'"')[0];
+                return d >= range.startDate && d <= range.endDate;
+            });
+
+            weekActivities.forEach(a => {
+                if (a.type === '"'"'habit_checkin'"'"') checkinCount++;
+            });
+
+            // Count completed todos this week
+            const completedTodos = APP_DATA.todos.filter(t => {
+                if (!t.done || !t.doneDate) return false;
+                return t.doneDate >= range.startDate && t.doneDate <= range.endDate;
+            });
+
+            // Quick links count
+            const links = getQuickLinks();
+
+            document.getElementById('"'"'stats-checkin-count'"'"').textContent = checkinCount;
+            document.getElementById('"'"'stats-todo-count'"'"').textContent = completedTodos.length;
+            document.getElementById('"'"'stats-shortcut-count'"'"').textContent = links.length;
+
+            // Draw chart (4 weeks)
+            drawStatsChart();
+
+            // Habit ranking
+            renderHabitRanking();
+
+            // Todo details by category
+            renderTodoDetails();
+        }
+
+        function drawStatsChart() {
+            const chartContainer = document.getElementById('"'"'stats-chart'"'"');
+            const data = [];
+            for (let i = -3; i <= 0; i++) {
+                const range = getWeekRange(i);
+                const activityLog = getActivityLog();
+                const count = activityLog.filter(a => {
+                    if (a.type !== '"'"'habit_checkin'"'"' || !a.timestamp) return false;
+                    const d = a.timestamp.split('"'"'T'"'"')[0];
+                    return d >= range.startDate && d <= range.endDate;
+                }).length;
+                data.push({ label: i === 0 ? '"'"'本周'"'"' : i === -1 ? '"'"'上周'"'"' : `${Math.abs(i)}周前`, count });
+            }
+
+            const max = Math.max(...data.map(d => d.count), 1);
+            chartContainer.innerHTML = data.map(d => `
+                <div class="stats-bar-wrapper">
+                    <div class="stats-bar" style="height: ${Math.max(4, Math.round(d.count / max * 52))}px;" title="${d.count}次"></div>
+                    <div class="stats-bar-label">${d.label}<br><span style="font-weight:600;color:var(--primary);">${d.count}</span></div>
+                </div>
+            `).join('"'"''"'"');
+        }
+
+        function renderHabitRanking() {
+            const container = document.getElementById('"'"'stats-habit-ranking'"'"');
+            if (APP_DATA.habits.length === 0) {
+                container.innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:12px;font-size:14px;">暂无习惯数据</div>';
+                return;
+            }
+            const sorted = [...APP_DATA.habits].sort((a, b) => {
+                const sa = calculateStreak(a);
+                const sb = calculateStreak(b);
+                return sb - sa;
+            });
+            const top = sorted.slice(0, 5);
+            container.innerHTML = top.map((h, i) => {
+                const emoji = i === 0 ? '"'"'🥇'"'"' : i === 1 ? '"'"'🥈'"'"' : i === 2 ? '"'"'🥉'"'"' : '"'"'📌'"'"';
+                return `
+                    <div style="display:flex;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--separator);${i === top.length - 1 ? '"'"'border-bottom:none;'"'"' : '"'"''"'"'}">
+                        <span style="font-size:18px;margin-right:10px;">${emoji}</span>
+                        <span style="flex:1;font-size:14px;">${h.name}</span>
+                        <span style="font-size:14px;font-weight:600;color:var(--primary);">🔥 ${calculateStreak(h)}天</span>
+                    </div>
+                `;
+            }).join('"'"''"'"');
+        }
+
+        function renderTodoDetails() {
+            const container = document.getElementById('"'"'stats-todo-details'"'"');
+            const cats = ['"'"'工作'"'"', '"'"'生活'"'"', '"'"'学习'"'"'];
+            container.innerHTML = cats.map(cat => {
+                const total = APP_DATA.todos.filter(t => t.category === cat).length;
+                const done = APP_DATA.todos.filter(t => t.category === cat && t.done).length;
+                const rate = total > 0 ? Math.round(done / total * 100) : 0;
+                const emoji = cat === '"'"'工作'"'"' ? '"'"'💼'"'"' : cat === '"'"'生活'"'"' ? '"'"'🏠'"'"' : '"'"'📚'"'"';
+                return `
+                    <div class="stats-detail-item">
+                        <span class="stats-detail-icon">${emoji}</span>
+                        <div class="stats-detail-info">
+                            <div class="stats-detail-value">${done}/${total}</div>
+                            <div class="stats-detail-label">${cat}（${rate}%）</div>
+                        </div>
+                    </div>
+                `;
+            }).join('"'"''"'"');
+        }
+
+        function getActivityLog() {
+            try {
+                return JSON.parse(localStorage.getItem('"'"'activity_log'"'"') || '"'"'[]'"'"');
+            } catch (e) { return []; }
+        }
+
+        function shareStatsToWechat() {
+            const range = getWeekRange(currentStatsWeekOffset);
+            const checkins = document.getElementById('"'"'stats-checkin-count'"'"').textContent;
+            const todos = document.getElementById('"'"'stats-todo-count'"'"').textContent;
+            const shortcuts = document.getElementById('"'"'stats-shortcut-count'"'"').textContent;
+            
+            const topHabits = [...APP_DATA.habits]
+                .sort((a, b) => calculateStreak(b) - calculateStreak(a))
+                .slice(0, 3)
+                .map((h, i) => `${i + 1}. ${h.name} 🔥${calculateStreak(h)}天`)
+                .join('"'"'\n'"'"');
+
+            const text = `📊 子灿周报 ${range.start}~${range.end}
+
+📈 本周数据
+• 打卡次数：${checkins}次
+• 完成待办：${todos}个
+• 快捷入口：${shortcuts}个
+
+🏆 习惯排行榜
+${topHabits || '"'"'暂无数据'"'"'}
+
+—— 子灿App`;
+
+            if (navigator.share) {
+                navigator.share({ title: '"'"'📊 子灿周报'"'"', text: text }).catch(() => {
+                    copyToClipboard(text);
+                    showToast('已复制到剪贴板，长按粘贴发送');
+                });
+            } else {
+                copyToClipboard(text);
+                showToast('已复制到剪贴板，长按粘贴发送');
+            }
+        }
+
+        function copyToClipboard(text) {
+            const textarea = document.createElement('"'"'textarea'"'"');
+            textarea.value = text;
+            textarea.style.position = '"'"'fixed'"'"';
+            textarea.style.opacity = '"'"'0'"'"';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('"'"'copy'"'"');
+            document.body.removeChild(textarea);
+        }
+</script>
 </body>
 </html>
+
+
+
+
