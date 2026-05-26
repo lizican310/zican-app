@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#F2F2F7" id="theme-color-meta">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <meta name="msapplication-TileColor" content="#007AFF">
-    <title>子灿 v1.1.0</title>
+    <title>子灿 v1.2.0</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -1070,6 +1070,65 @@
         .home-card-wrapper {
             touch-action: none;
         }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            text-align: center;
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .calendar-header .month-title {
+            font-size: 17px;
+            font-weight: 600;
+        }
+        .calendar-nav {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px 12px;
+            color: var(--primary);
+            min-width: 44px;
+            min-height: 44px;
+        }
+        .calendar-weekday {
+            font-size: 12px;
+            color: var(--text-secondary);
+            padding: 6px 0;
+            font-weight: 500;
+        }
+        .calendar-day {
+            padding: 8px 0;
+            font-size: 14px;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            cursor: pointer;
+        }
+        .calendar-day.checked {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+        }
+        .calendar-day.today {
+            border: 2px solid var(--primary);
+        }
+        .calendar-day.other-month {
+            opacity: 0.3;
+        }
+        .calendar-day.empty {
+            cursor: default;
+        }
     </style>
 </head>
 <body>
@@ -1412,6 +1471,10 @@
                     <option value="生活">生活</option>
                 </select>
             </div>
+            <div class="form-group">
+                <label class="form-label">初始已打卡天数</label>
+                <input type="number" class="input-field" id="habit-base" value="0" min="0" style="width:100px;">
+            </div>
         </div>
     </div>
 
@@ -1488,6 +1551,25 @@
         </div>
     </div>
 
+    <!-- Calendar Modal -->
+    <div class="modal-overlay" id="calendar-modal">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <button class="modal-cancel" onclick="hideCalendarModal()">关闭</button>
+                <div class="modal-title">打卡日历</div>
+                <div style="width:44px;"></div>
+            </div>
+            <div style="padding:16px 20px 24px;">
+                <div class="calendar-header">
+                    <button class="calendar-nav" onclick="navigateMonth(-1)">‹</button>
+                    <div class="month-title" id="calendar-month-title"></div>
+                    <button class="calendar-nav" onclick="navigateMonth(1)">›</button>
+                </div>
+                <div class="calendar-grid" id="calendar-grid"></div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ==================== Data Management ====================
         const DEFAULT_GROUPS = {
@@ -1498,7 +1580,7 @@
             '灿灿组': { leader: '灿灿', count: 9, members: ['诗诗','池鱼','思思','小魏','境泽','百川','星星','文豪','图图'] }
         };
 
-        const DATA_VERSION = 4;
+        const DATA_VERSION = 5;
 
         // Supabase Cloud Sync
         const SUPABASE_URL = 'https://tiaaldbhzwaxjecmmfqg.supabase.co';
@@ -1597,6 +1679,16 @@
             // Version migration: always sync groups to latest
             if (!APP_DATA._version || APP_DATA._version < DATA_VERSION) {
                 APP_DATA.groups = JSON.parse(JSON.stringify(DEFAULT_GROUPS));
+                // v1.2.0 migration: set baseCount for existing habits
+                APP_DATA.habits.forEach(h => {
+                    if (h.baseCount === undefined) {
+                        let oldCount = 0;
+                        if (h.checkins) {
+                            oldCount = h.checkins.length;
+                        }
+                        h.baseCount = oldCount;
+                    }
+                });
                 APP_DATA._version = DATA_VERSION;
                 saveData();
             }
@@ -1748,7 +1840,7 @@
             container.innerHTML = APP_DATA.habits.map(habit => {
                 const today = getTodayString();
                 const isChecked = habit.checkins && habit.checkins.includes(today);
-                const streak = calculateStreak(habit);
+                const streak = getTotalDays(habit);
                 return `
                     <div class="habit-item fade-in">
                         <div class="habit-check ${isChecked ? 'checked' : ''}" onclick="toggleHabitCheckin('${habit.id}')">
@@ -1756,7 +1848,7 @@
                         </div>
                         <div class="habit-info">
                             <div class="habit-name">${habit.name} <span class="category-tag">${habit.category || '生活'}</span></div>
-                            <div class="habit-streak">🔥 连续${streak}天</div>
+                            <div class="habit-streak" style="cursor:pointer" onclick="showCalendarModal('${habit.id}')">📅 已打卡${streak}天</div>
                         </div>
                     </div>
                 `;
@@ -1848,7 +1940,7 @@
             container.innerHTML = habits.map(habit => {
                 const today = getTodayString();
                 const isChecked = habit.checkins && habit.checkins.includes(today);
-                const streak = calculateStreak(habit);
+                const streak = getTotalDays(habit);
                 const weekDots = getWeekDots(habit);
                 return `
                     <div class="habit-item fade-in" style="flex-direction: column; align-items: stretch;">
@@ -1858,7 +1950,7 @@
                             </div>
                             <div class="habit-info" style="flex: 1;">
                                 <div class="habit-name">${habit.name} <span class="category-tag">${habit.category || '生活'}</span></div>
-                                <div class="habit-streak">🔥 连续${streak}天</div>
+                                <div class="habit-streak" style="cursor:pointer" onclick="showCalendarModal('${habit.id}')">📅 已打卡${streak}天</div>
                             </div>
                             <button class="nav-btn" onclick="deleteHabit('${habit.id}')" style="color: var(--red);">🗑️</button>
                         </div>
@@ -1870,24 +1962,8 @@
             }).join('');
         }
 
-        function calculateStreak(habit) {
-            // Force specific streaks by habit name
-            if (habit.name && habit.name.includes('学英语')) return 42;
-            if (habit.name && habit.name.includes('看书')) return 4;
-            if (!habit.checkins || habit.checkins.length === 0) return 0;
-            const sorted = [...habit.checkins].sort().reverse();
-            let streak = 0;
-            let checkDate = new Date();
-            checkDate.setHours(0, 0, 0, 0);
-            for (const ds of sorted) {
-                if (ds === formatDate(checkDate)) {
-                    streak++;
-                    checkDate.setDate(checkDate.getDate() - 1);
-                } else {
-                    break;
-                }
-            }
-            return streak;
+        function getTotalDays(habit) {
+            return (habit.baseCount || 0) + (habit.checkins ? habit.checkins.length : 0);
         }
 
         function getWeekDots(habit) {
@@ -1937,11 +2013,13 @@
                 showToast('请输入习惯名称');
                 return;
             }
+            const baseVal = parseInt(document.getElementById('habit-base').value) || 0;
             APP_DATA.habits.push({
                 id: generateId(),
                 name: name,
                 category: document.getElementById('habit-category').value,
                 created: getTodayString(),
+                baseCount: baseVal,
                 checkins: []
             });
             saveData();
@@ -2730,6 +2808,57 @@
                 const swURL = URL.createObjectURL(swBlob);
                 navigator.serviceWorker.register(swURL).catch(e => console.log('SW registration failed:', e));
             }
+        }
+
+        // ==================== Calendar View ====================
+        let _calendarYear, _calendarMonth, _calendarHabitId;
+
+        function showCalendarModal(habitId) {
+            const habit = APP_DATA.habits.find(h => h.id === habitId);
+            if (!habit) return;
+            _calendarHabitId = habitId;
+            const today = new Date();
+            _calendarYear = today.getFullYear();
+            _calendarMonth = today.getMonth();
+            renderCalendar();
+            document.getElementById('calendar-modal').classList.add('active');
+        }
+
+        function hideCalendarModal() {
+            document.getElementById('calendar-modal').classList.remove('active');
+        }
+
+        function navigateMonth(delta) {
+            _calendarMonth += delta;
+            if (_calendarMonth < 0) { _calendarMonth = 11; _calendarYear--; }
+            if (_calendarMonth > 11) { _calendarMonth = 0; _calendarYear++; }
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const habit = APP_DATA.habits.find(h => h.id === _calendarHabitId);
+            const checkins = habit ? (habit.checkins || []) : [];
+            const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+            document.getElementById('calendar-month-title').textContent = `${_calendarYear}年 ${monthNames[_calendarMonth]}`;
+            const grid = document.getElementById('calendar-grid');
+            const weekdays = ['日','一','二','三','四','五','六'];
+            let html = weekdays.map(d => `<div class="calendar-weekday">${d}</div>`).join('');
+            const firstDay = new Date(_calendarYear, _calendarMonth, 1).getDay();
+            const daysInMonth = new Date(_calendarYear, _calendarMonth + 1, 0).getDate();
+            const todayStr = getTodayString();
+            for (let i = 0; i < firstDay; i++) {
+                html += '<div class="calendar-day empty"></div>';
+            }
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${_calendarYear}-${String(_calendarMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const isChecked = checkins.includes(dateStr);
+                const isToday = dateStr === todayStr;
+                let cls = 'calendar-day';
+                if (isChecked) cls += ' checked';
+                if (isToday) cls += ' today';
+                html += `<div class="${cls}">${d}</div>`;
+            }
+            grid.innerHTML = html;
         }
 
         // ==================== Weekly Stats ====================
