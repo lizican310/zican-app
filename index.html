@@ -6,10 +6,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="子灿">
-    <meta name="theme-color" content="#F2F2F7">
+    <meta name="theme-color" content="#F2F2F7" id="theme-color-meta">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <meta name="msapplication-TileColor" content="#007AFF">
-    <title>子灿</title>
+    <title>子灿 v1.1.0</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -28,14 +28,19 @@
             --safe-bottom: env(safe-area-inset-bottom, 0px);
         }
 
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #000000;
-                --card: #1C1C1E;
-                --text: #FFFFFF;
-                --text-secondary: #EBEBF5;
-                --separator: #38383A;
-            }
+        body.dark-mode {
+            --bg: #000000;
+            --card: #1C1C1E;
+            --text: #FFFFFF;
+            --text-secondary: #EBEBF5;
+            --separator: #38383A;
+        }
+        body.dark-mode .nav-bar,
+        body.dark-mode .tab-bar {
+            background: rgba(0, 0, 0, 0.85);
+        }
+        body.dark-mode .weather-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
         }
 
         * {
@@ -86,12 +91,6 @@
             position: sticky;
             top: 0;
             z-index: 100;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            .nav-bar {
-                background: rgba(0, 0, 0, 0.85);
-            }
         }
 
         .nav-title {
@@ -156,12 +155,6 @@
             padding-top: 8px;
             z-index: 1000;
             border-top: 0.5px solid var(--separator);
-        }
-
-        @media (prefers-color-scheme: dark) {
-            .tab-bar {
-                background: rgba(0, 0, 0, 0.85);
-            }
         }
 
         .tab-item {
@@ -1086,7 +1079,10 @@
             <div class="nav-bar">
                 <div class="nav-header">
                     <div class="nav-title" id="greeting">早上好，子灿</div>
-                    <button class="card-settings-btn" onclick="showCardSettingsModal()" title="首页卡片设置">⚙️</button>
+                    <div style="display:flex;gap:4px;">
+                        <button class="card-settings-btn" onclick="toggleDarkMode()" id="dark-mode-btn" title="切换深色模式">🌙</button>
+                        <button class="card-settings-btn" onclick="showCardSettingsModal()" title="首页卡片设置">⚙️</button>
+                    </div>
                 </div>
             </div>
             <div class="content" id="home-cards-container">
@@ -2511,6 +2507,28 @@
             }, 60000);
         }
 
+        // ==================== Dark Mode ====================
+        function toggleDarkMode() {
+            const isDark = document.body.classList.toggle('dark-mode');
+            localStorage.setItem('dark_mode', isDark ? '1' : '0');
+            document.getElementById('dark-mode-btn').textContent = isDark ? '☀️' : '🌙';
+            document.getElementById('theme-color-meta').content = isDark ? '#000000' : '#F2F2F7';
+        }
+
+        function loadDarkModePreference() {
+            const saved = localStorage.getItem('dark_mode');
+            if (saved === '1') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('dark-mode-btn').textContent = '☀️';
+                document.getElementById('theme-color-meta').content = '#000000';
+            } else if (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.body.classList.add('dark-mode');
+                document.getElementById('dark-mode-btn').textContent = '☀️';
+                document.getElementById('theme-color-meta').content = '#000000';
+                localStorage.setItem('dark_mode', '1');
+            }
+        }
+
         // ==================== Card Preferences ====================
         const CARD_KEYS = {
             'weather': '天气',
@@ -2748,6 +2766,7 @@
         // ==================== Initialize ====================
         async function init() {
             requestNotificationPermission();
+            loadDarkModePreference();
             initSupabase();
             loadData();
             applyCardPreferences();
