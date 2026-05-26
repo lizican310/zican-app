@@ -10,6 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <meta name="msapplication-TileColor" content="#007AFF">
     <title>子灿</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --primary: #007AFF;
@@ -1076,144 +1077,7 @@
         .home-card-wrapper {
             touch-action: none;
         }
-    
-        /* ==================== Stats Weekly Report ==================== */
-        .stats-page {
-            padding: 0 20px 20px;
-        }
-        .stats-header {
-            font-size: 20px;
-            font-weight: 600;
-            margin: 16px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .stats-card {
-            background: var(--card);
-            border-radius: var(--radius);
-            padding: 16px;
-            margin-bottom: 12px;
-        }
-        .stats-card-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .stats-big-number {
-            font-size: 36px;
-            font-weight: 700;
-            color: var(--primary);
-            text-align: center;
-            padding: 8px 0;
-        }
-        .stats-row {
-            display: flex;
-            gap: 12px;
-        }
-        .stats-row .stat-card {
-            flex: 1;
-            margin-bottom: 0;
-        }
-        .stats-bar-container {
-            display: flex;
-            align-items: flex-end;
-            gap: 4px;
-            height: 60px;
-            justify-content: space-between;
-            padding: 0 4px;
-        }
-        .stats-bar-wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-end;
-            height: 100%;
-        }
-        .stats-bar {
-            width: 100%;
-            max-width: 28px;
-            border-radius: 4px 4px 0 0;
-            background: var(--primary);
-            transition: height 0.3s;
-            min-height: 4px;
-        }
-        .stats-bar-label {
-            font-size: 10px;
-            color: var(--text-secondary);
-            margin-top: 4px;
-            text-align: center;
-        }
-        .stats-emoji-row {
-            display: flex;
-            justify-content: space-around;
-            text-align: center;
-            margin-top: 8px;
-        }
-        .stats-emoji-item {
-            flex: 1;
-        }
-        .stats-emoji-item .emoji {
-            font-size: 24px;
-        }
-        .stats-emoji-item .value {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--primary);
-        }
-        .stats-emoji-item .label {
-            font-size: 11px;
-            color: var(--text-secondary);
-        }
-        .stats-share-btn {
-            width: 100%;
-            padding: 14px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 8px;
-        }
-        .stats-share-btn:active {
-            opacity: 0.8;
-        }
-        .stats-detail-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-top: 12px;
-        }
-        .stats-detail-item {
-            background: var(--bg);
-            border-radius: 8px;
-            padding: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .stats-detail-icon {
-            font-size: 20px;
-        }
-        .stats-detail-info {
-            flex: 1;
-        }
-        .stats-detail-value {
-            font-size: 16px;
-            font-weight: 600;
-        }
-        .stats-detail-label {
-            font-size: 11px;
-            color: var(--text-secondary);
-        }
-</style>
+    </style>
 </head>
 <body>
     <div class="app-container">
@@ -1489,61 +1353,16 @@
 
                 <div style="font-size: 17px; font-weight: 600; margin: 20px 0 12px;">本周违规记录</div>
                 <div id="violations-list"></div>
+
+                <div style="font-size: 20px; font-weight: 600; margin: 24px 0 12px;">统计周报</div>
+                <div class="card" id="weekly-stats-card">
+                    <div id="weekly-stats-content">加载中...</div>
+                </div>
             </div>
         </div>
 
         <!-- Tab Bar -->
-        
-        <!-- Page 6: 数据统计 -->
-        <div id="page-stats" class="page">
-            <div class="nav-bar">
-                <div class="nav-header">
-                    <div class="nav-title">数据统计</div>
-                    <button class="nav-btn" onclick="openStatsWeekPicker()">📅</button>
-                </div>
-            </div>
-            <div class="stats-page">
-                <div id="stats-current-week-label" style="text-align:center;font-size:13px;color:var(--text-secondary);margin-bottom:8px;"></div>
-                
-                <div class="stats-card">
-                    <div class="stats-card-title">📊 本周总览</div>
-                    <div class="stats-row">
-                        <div class="stat-card">
-                            <div class="stat-value" id="stats-checkin-count">0</div>
-                            <div class="stat-label">打卡次数</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="stats-todo-count">0</div>
-                            <div class="stat-label">完成待办</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="stats-shortcut-count">0</div>
-                            <div class="stat-label">快捷入口</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="stats-card">
-                    <div class="stats-card-title">📈 打卡趋势（近4周）</div>
-                    <div class="stats-bar-container" id="stats-chart"></div>
-                </div>
-
-                <div class="stats-card">
-                    <div class="stats-card-title">🏆 习惯排行榜</div>
-                    <div id="stats-habit-ranking"></div>
-                </div>
-
-                <div class="stats-card">
-                    <div class="stats-card-title">📋 待办完成详情</div>
-                    <div class="stats-detail-grid" id="stats-todo-details"></div>
-                </div>
-
-                <button class="stats-share-btn" onclick="shareStatsToWechat()">
-                    📤 分享统计到微信
-                </button>
-            </div>
-        </div>
-<div class="tab-bar">
+        <div class="tab-bar">
             <div class="tab-item active" data-page="today" onclick="switchPage('today')">
                 <svg class="tab-icon" viewBox="0 0 24 24">
                     <path d="M3 13h1v7c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-7h1a1 1 0 0 0 .7-1.7l-9-9a1 1 0 0 0-1.4 0l-9 9A1 1 0 0 0 3 13zm9-8.6 6 6V20h-4v-5a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v5H6v-9.6l6-6z"/>
@@ -1689,11 +1508,81 @@
         const SUPABASE_URL = 'https://tiaaldbhzwaxjecmmfqg.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRpYWFsZGJoendheGplY21tZnFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NTIyODYsImV4cCI6MjA5NTIyODI4Nn0.zqHOU_g3aWfrnvYfved6Kz-J2kYAxZoIRlj8uJpuSpE';
         let supabaseClient = null;
-                const APP_DATA = {
+        let cloudSyncEnabled = true; // V17: Enabled
+
+        function initSupabase() {
+            try {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                cloudSyncEnabled = true;
+                console.log('Supabase initialized');
+                return true;
+            } catch(e) {
+                console.warn('Supabase init failed:', e);
+                cloudSyncEnabled = false;
+                return false;
+            }
+        }
+
+        async function pushToCloud() {
+            if (!cloudSyncEnabled || !supabaseClient) return false;
+            // Safety: never push empty data to cloud (would wipe other devices)
+            const habits = APP_DATA.habits || [];
+            const todos = APP_DATA.todos || [];
+            if (habits.length === 0 && todos.length === 0) {
+                console.warn('Skipping push: no habits or todos (safety)');
+                return false;
+            }
+            try {
+                const dataToSave = JSON.parse(JSON.stringify(APP_DATA));
+                delete dataToSave._version;
+                const { data, error } = await supabaseClient
+                    .from('app_state')
+                    .upsert({ id: 'default', data: dataToSave, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+                if (error) {
+                    // Table might not exist, try creating it via RPC or just fail gracefully
+                    if (error.code === '42P01' || error.message.includes('does not exist')) {
+                        console.warn('Table app_state does not exist yet');
+                        return false;
+                    }
+                    console.error('Push error:', error);
+                    return false;
+                }
+                console.log('Data pushed to cloud');
+                return true;
+            } catch(e) {
+                console.error('Push exception:', e);
+                return false;
+            }
+        }
+
+        async function pullFromCloud() {
+            if (!cloudSyncEnabled || !supabaseClient) return null;
+            try {
+                const { data, error } = await supabaseClient
+                    .from('app_state')
+                    .select('data, updated_at')
+                    .eq('id', 'default')
+                    .single();
+                if (error) {
+                    if (error.code === '42P01' || error.message.includes('does not exist')) {
+                        console.warn('Table does not exist yet');
+                        return null;
+                    }
+                    console.error('Pull error:', error);
+                    return null;
+                }
+                console.log('Data pulled from cloud, updated:', data.updated_at);
+                return data.data;
+            } catch(e) {
+                console.error('Pull exception:', e);
+                return null;
+            }
+        }
+
+        const APP_DATA = {
             habits: [],
             todos: [],
             violations: [],
-            weeklyReport: { checkCount: '', violations: '', redLines: '', notes: '' },
             settings: { sign: '双鱼座', firebaseConfig: null },
             groups: null,
             _version: 0
@@ -1708,7 +1597,6 @@
                 } catch (e) {
                     console.error('Failed to load data:', e);
                 }
-                }).catch(e => console.error('Cloud pull failed:', e));
             }
             // Version migration: always sync groups to latest
             if (!APP_DATA._version || APP_DATA._version < DATA_VERSION) {
@@ -1726,7 +1614,10 @@
             const now = new Date().toISOString();
             APP_DATA._cloudUpdated = now;
             localStorage.setItem('zican_app_data', JSON.stringify(APP_DATA));
+            // V16: Skip cloud push
+            return;
             localStorage.setItem('zican_app_updated', now);
+            pushToCloud(); // async, fire and forget
         }
 
         function exportData() {
@@ -1788,7 +1679,6 @@
             if (page === 'todos') loadTodosPage();
             if (page === 'info') loadInfoPage();
             if (page === 'work') loadWorkPage();
-            if (page === 'stats') loadStatsPage();
         }
 
         function switchInfoTab(tab) {
@@ -2442,6 +2332,7 @@
         function loadWorkPage() {
             loadGroups();
             loadViolations();
+            loadWeeklyStats();
             document.getElementById('violation-date').value = getTodayString();
             // Populate violation-group select
             const groupSelect = document.getElementById('violation-group');
@@ -2583,7 +2474,7 @@
         }
 
         function exportWeeklyReport() {
-            showToast('导出功能需在电脑端配置腾讯文档后使用');
+            showToast('导出功能开发中');
         }
 
         // ==================== Notification Permission ====================
@@ -2791,7 +2682,7 @@
         }
 
         // ==================== PWA Support ====================
-        function {
+        function registerPWA() {
             const manifest = {
                 name: '子灿',
                 short_name: '子灿',
@@ -2804,25 +2695,17 @@
                     { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%23007AFF"/><text y=".9em" font-size="90" text-anchor="middle" x="50">✨</text></svg>', sizes: 'any', type: 'image/svg+xml' }
                 ]
             };
-
             const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
             const manifestURL = URL.createObjectURL(manifestBlob);
             const link = document.createElement('link');
             link.rel = 'manifest';
             link.href = manifestURL;
             document.head.appendChild(link);
-
             if ('serviceWorker' in navigator) {
                 const swCode = `
-                    self.addEventListener('install', e => {
-                        self.skipWaiting();
-                    });
-                    self.addEventListener('activate', e => {
-                        e.waitUntil(clients.claim());
-                    });
-                    self.addEventListener('fetch', e => {
-                        e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
-                    });
+                    self.addEventListener('install', e => { self.skipWaiting(); });
+                    self.addEventListener('activate', e => { e.waitUntil(clients.claim()); });
+                    self.addEventListener('fetch', e => { e.respondWith(fetch(e.request).catch(() => caches.match(e.request))); });
                 `;
                 const swBlob = new Blob([swCode], { type: 'application/javascript' });
                 const swURL = URL.createObjectURL(swBlob);
@@ -2830,230 +2713,90 @@
             }
         }
 
+        // ==================== Weekly Stats ====================
+        function loadWeeklyStats() {
+            const container = document.getElementById('weekly-stats-content');
+            if (!container) return;
+            try {
+                const log = JSON.parse(localStorage.getItem(ACTIVITY_LOG_KEY) || '[]');
+                const weekStart = new Date();
+                weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                weekStart.setHours(0,0,0,0);
+                const weekLog = log.filter(e => new Date(e.timestamp) >= weekStart);
+                let checkins = 0, todosDone = 0, linksAdded = 0;
+                weekLog.forEach(e => {
+                    if (e.type === 'habit_checkin') checkins++;
+                    if (e.type === 'todo_complete') todosDone++;
+                    if (e.type === 'quicklink_add') linksAdded++;
+                });
+                const weekViolations = APP_DATA.violations.filter(v => v.date >= formatDate(weekStart));
+                const violations = weekViolations.length;
+                container.innerHTML = `
+                    <div class="stats-grid" style="margin-bottom:0;">
+                        <div class="stat-card"><div class="stat-value">${checkins}</div><div class="stat-label">习惯打卡</div></div>
+                        <div class="stat-card"><div class="stat-value">${todosDone}</div><div class="stat-label">完成待办</div></div>
+                        <div class="stat-card"><div class="stat-value">${linksAdded}</div><div class="stat-label">添加快捷</div></div>
+                        <div class="stat-card"><div class="stat-value" style="color:${violations > 0 ? 'var(--red)' : 'var(--primary)'}">${violations}</div><div class="stat-label">违规记录</div></div>
+                    </div>
+                `;
+            } catch(e) {
+                container.innerHTML = '<div class="empty-state-text">暂无数据</div>';
+            }
+        }
+
         // ==================== Initialize ====================
         async function init() {
             requestNotificationPermission();
+            initSupabase();
             loadData();
             applyCardPreferences();
             setTimeout(initSortable, 100);
             loadQuickLinks();
             startReminderChecker();
-            
-            
-            
-            // Try to pull from cloud and merge
-                }
+            loadWeeklyStats();
+
+            // Non-blocking cloud sync
+            if (cloudSyncEnabled) {
+                pullFromCloud().then(cloudData => {
+                    if (cloudData) {
+                        const localHabits = APP_DATA.habits || [];
+                        const cloudHabits = cloudData.habits || [];
+                        const localTodos = APP_DATA.todos || [];
+                        const cloudTodos = cloudData.todos || [];
+                        const habitMap = new Map();
+                        localHabits.forEach(h => habitMap.set(h.id, h));
+                        cloudHabits.forEach(h => habitMap.set(h.id, h));
+                        const todoMap = new Map();
+                        localTodos.forEach(t => todoMap.set(t.id, t));
+                        cloudTodos.forEach(t => todoMap.set(t.id, t));
+                        Object.assign(APP_DATA, cloudData);
+                        APP_DATA.habits = Array.from(habitMap.values());
+                        APP_DATA.todos = Array.from(todoMap.values());
+                        APP_DATA._version = DATA_VERSION;
+                        localStorage.setItem('zican_app_data', JSON.stringify(APP_DATA));
+                        saveData();
+                        loadTodayPage();
+                        loadHabitsPage();
+                        loadTodosPage();
+                        loadWeeklyStats();
+                    }
+                }).catch(e => console.error('[CLOUD] Pull failed:', e));
             }
 
             registerPWA();
-            
-            registerPWA();
-            
-            // URL parameter support: ?tab=habits|todos|info|work
+
             const params = new URLSearchParams(window.location.search);
             const tab = params.get('tab');
-            const validTabs = ['today', 'habits', 'todos', 'info', 'work', 'stats'];
+            const validTabs = ['today', 'habits', 'todos', 'info', 'work'];
             if (tab && validTabs.includes(tab)) {
                 switchPage(tab);
             } else {
                 switchPage('today');
             }
-            
             updateGreeting();
         }
 
         document.addEventListener('DOMContentLoaded', init);
-    
-        // ==================== Page: Stats ====================
-        let currentStatsWeekOffset = 0;
-
-        function getWeekRange(offset) {
-            const now = new Date();
-            const d = new Date(now);
-            d.setDate(d.getDate() - d.getDay() + offset * 7);
-            const start = new Date(d);
-            start.setDate(start.getDate() - start.getDay());
-            const end = new Date(start);
-            end.setDate(end.getDate() + 6);
-            const fmt = (date) => `${"${"${"}date.getMonth() + 1`}`.padStart(2, '"'"'0'"'"')}-${"${"}date.getDate()`.toString().padStart(2, '"'"'0'"'"')}`;
-            return { start: fmt(start), end: fmt(end), startDate: formatDate(start), endDate: formatDate(end) };
-        }
-
-        function getWeekLabel(offset) {
-            const range = getWeekRange(offset);
-            if (offset === 0) return `本周（${range.start} ~ ${range.end}）`;
-            if (offset === -1) return `上周（${range.start} ~ ${range.end}）`;
-            return `第${Math.abs(offset)}周前（${range.start} ~ ${range.end}）`;
-        }
-
-        function openStatsWeekPicker() {
-            currentStatsWeekOffset = (currentStatsWeekOffset - 1 + 4) % 4;
-            loadStatsPage();
-        }
-
-        function loadStatsPage() {
-            if (currentPage !== '"'"'stats'"'"') return;
-            const range = getWeekRange(currentStatsWeekOffset);
-            document.getElementById('"'"'stats-current-week-label'"'"').textContent = getWeekLabel(currentStatsWeekOffset);
-
-            // Count checkins this week
-            let checkinCount = 0;
-            const activityLog = getActivityLog();
-            const weekActivities = activityLog.filter(a => {
-                if (!a.timestamp) return false;
-                const d = a.timestamp.split('"'"'T'"'"')[0];
-                return d >= range.startDate && d <= range.endDate;
-            });
-
-            weekActivities.forEach(a => {
-                if (a.type === '"'"'habit_checkin'"'"') checkinCount++;
-            });
-
-            // Count completed todos this week
-            const completedTodos = APP_DATA.todos.filter(t => {
-                if (!t.done || !t.doneDate) return false;
-                return t.doneDate >= range.startDate && t.doneDate <= range.endDate;
-            });
-
-            // Quick links count
-            const links = getQuickLinks();
-
-            document.getElementById('"'"'stats-checkin-count'"'"').textContent = checkinCount;
-            document.getElementById('"'"'stats-todo-count'"'"').textContent = completedTodos.length;
-            document.getElementById('"'"'stats-shortcut-count'"'"').textContent = links.length;
-
-            // Draw chart (4 weeks)
-            drawStatsChart();
-
-            // Habit ranking
-            renderHabitRanking();
-
-            // Todo details by category
-            renderTodoDetails();
-        }
-
-        function drawStatsChart() {
-            const chartContainer = document.getElementById('"'"'stats-chart'"'"');
-            const data = [];
-            for (let i = -3; i <= 0; i++) {
-                const range = getWeekRange(i);
-                const activityLog = getActivityLog();
-                const count = activityLog.filter(a => {
-                    if (a.type !== '"'"'habit_checkin'"'"' || !a.timestamp) return false;
-                    const d = a.timestamp.split('"'"'T'"'"')[0];
-                    return d >= range.startDate && d <= range.endDate;
-                }).length;
-                data.push({ label: i === 0 ? '"'"'本周'"'"' : i === -1 ? '"'"'上周'"'"' : `${Math.abs(i)}周前`, count });
-            }
-
-            const max = Math.max(...data.map(d => d.count), 1);
-            chartContainer.innerHTML = data.map(d => `
-                <div class="stats-bar-wrapper">
-                    <div class="stats-bar" style="height: ${Math.max(4, Math.round(d.count / max * 52))}px;" title="${d.count}次"></div>
-                    <div class="stats-bar-label">${d.label}<br><span style="font-weight:600;color:var(--primary);">${d.count}</span></div>
-                </div>
-            `).join('"'"''"'"');
-        }
-
-        function renderHabitRanking() {
-            const container = document.getElementById('"'"'stats-habit-ranking'"'"');
-            if (APP_DATA.habits.length === 0) {
-                container.innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:12px;font-size:14px;">暂无习惯数据</div>';
-                return;
-            }
-            const sorted = [...APP_DATA.habits].sort((a, b) => {
-                const sa = calculateStreak(a);
-                const sb = calculateStreak(b);
-                return sb - sa;
-            });
-            const top = sorted.slice(0, 5);
-            container.innerHTML = top.map((h, i) => {
-                const emoji = i === 0 ? '"'"'🥇'"'"' : i === 1 ? '"'"'🥈'"'"' : i === 2 ? '"'"'🥉'"'"' : '"'"'📌'"'"';
-                return `
-                    <div style="display:flex;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--separator);${i === top.length - 1 ? '"'"'border-bottom:none;'"'"' : '"'"''"'"'}">
-                        <span style="font-size:18px;margin-right:10px;">${emoji}</span>
-                        <span style="flex:1;font-size:14px;">${h.name}</span>
-                        <span style="font-size:14px;font-weight:600;color:var(--primary);">🔥 ${calculateStreak(h)}天</span>
-                    </div>
-                `;
-            }).join('"'"''"'"');
-        }
-
-        function renderTodoDetails() {
-            const container = document.getElementById('"'"'stats-todo-details'"'"');
-            const cats = ['"'"'工作'"'"', '"'"'生活'"'"', '"'"'学习'"'"'];
-            container.innerHTML = cats.map(cat => {
-                const total = APP_DATA.todos.filter(t => t.category === cat).length;
-                const done = APP_DATA.todos.filter(t => t.category === cat && t.done).length;
-                const rate = total > 0 ? Math.round(done / total * 100) : 0;
-                const emoji = cat === '"'"'工作'"'"' ? '"'"'💼'"'"' : cat === '"'"'生活'"'"' ? '"'"'🏠'"'"' : '"'"'📚'"'"';
-                return `
-                    <div class="stats-detail-item">
-                        <span class="stats-detail-icon">${emoji}</span>
-                        <div class="stats-detail-info">
-                            <div class="stats-detail-value">${done}/${total}</div>
-                            <div class="stats-detail-label">${cat}（${rate}%）</div>
-                        </div>
-                    </div>
-                `;
-            }).join('"'"''"'"');
-        }
-
-        function getActivityLog() {
-            try {
-                return JSON.parse(localStorage.getItem('"'"'activity_log'"'"') || '"'"'[]'"'"');
-            } catch (e) { return []; }
-        }
-
-        function shareStatsToWechat() {
-            const range = getWeekRange(currentStatsWeekOffset);
-            const checkins = document.getElementById('"'"'stats-checkin-count'"'"').textContent;
-            const todos = document.getElementById('"'"'stats-todo-count'"'"').textContent;
-            const shortcuts = document.getElementById('"'"'stats-shortcut-count'"'"').textContent;
-            
-            const topHabits = [...APP_DATA.habits]
-                .sort((a, b) => calculateStreak(b) - calculateStreak(a))
-                .slice(0, 3)
-                .map((h, i) => `${i + 1}. ${h.name} 🔥${calculateStreak(h)}天`)
-                .join('"'"'\n'"'"');
-
-            const text = `📊 子灿周报 ${range.start}~${range.end}
-
-📈 本周数据
-• 打卡次数：${checkins}次
-• 完成待办：${todos}个
-• 快捷入口：${shortcuts}个
-
-🏆 习惯排行榜
-${topHabits || '"'"'暂无数据'"'"'}
-
-—— 子灿App`;
-
-            if (navigator.share) {
-                navigator.share({ title: '"'"'📊 子灿周报'"'"', text: text }).catch(() => {
-                    copyToClipboard(text);
-                    showToast('已复制到剪贴板，长按粘贴发送');
-                });
-            } else {
-                copyToClipboard(text);
-                showToast('已复制到剪贴板，长按粘贴发送');
-            }
-        }
-
-        function copyToClipboard(text) {
-            const textarea = document.createElement('"'"'textarea'"'"');
-            textarea.value = text;
-            textarea.style.position = '"'"'fixed'"'"';
-            textarea.style.opacity = '"'"'0'"'"';
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('"'"'copy'"'"');
-            document.body.removeChild(textarea);
-        }
-</script>
+    </script>
 </body>
 </html>
-
-
-
-
