@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#F2F2F7" id="theme-color-meta">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <meta name="msapplication-TileColor" content="#007AFF">
-    <title>子灿 v1.2.1</title>
+    <title>子灿 v2.0.0</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -1129,6 +1129,549 @@
         .calendar-day.empty {
             cursor: default;
         }
+
+        /* ==================== Life Page Modules ==================== */
+        .life-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .life-card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        /* Partner / Companion */
+        .partner-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .partner-avatar {
+            font-size: 56px;
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .partner-info {
+            flex: 1;
+        }
+        .partner-name {
+            font-size: 17px;
+            font-weight: 600;
+        }
+        .partner-name-input {
+            font-size: 17px;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            color: var(--text);
+            border-bottom: 1px solid var(--separator);
+            width: 120px;
+            outline: none;
+        }
+        .partner-energy-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+        .energy-bar-bg {
+            height: 8px;
+            background: var(--separator);
+            border-radius: 4px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+        .energy-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #FF6B6B, #FFD93D, #6BCB77);
+            transition: width 0.5s ease;
+        }
+        .partner-message {
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            min-height: 20px;
+        }
+        /* Morning Button */
+        .morning-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #FF9A9E, #FAD0C4);
+            border: none;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            cursor: pointer;
+            text-align: center;
+        }
+        .morning-btn:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+        .morning-msg {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        /* Achievement Badges */
+        .badges-scroll {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 4px;
+        }
+        .badges-scroll::-webkit-scrollbar { display: none; }
+        .badge-item {
+            flex-shrink: 0;
+            width: 80px;
+            text-align: center;
+        }
+        .badge-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 4px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: var(--bg);
+            border: 2px solid var(--separator);
+            transition: all 0.3s;
+        }
+        .badge-item.unlocked .badge-icon {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border-color: #FFD700;
+        }
+        .badge-name {
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.2;
+        }
+        .badge-progress {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+        /* Lucky Wheel */
+        .wheel-container {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            margin: 0 auto;
+        }
+        .wheel-canvas {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: conic-gradient(#FF6B6B 0deg 60deg, #FFD93D 60deg 120deg, #6BCB77 120deg 180deg, #4D96FF 180deg 240deg, #FF6B6B 240deg 300deg, #FFD93D 300deg 360deg);
+            position: relative;
+            transition: transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+            transform: rotate(0deg);
+        }
+        .wheel-canvas.spinning {
+            pointer-events: none;
+        }
+        .wheel-pointer {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            margin-left: -12px;
+            width: 24px;
+            height: 24px;
+            background: var(--card);
+            border: 3px solid var(--primary);
+            border-radius: 50%;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        .wheel-items {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+        }
+        .wheel-label {
+            position: absolute;
+            font-size: 11px;
+            font-weight: 600;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .wheel-spin-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-top: 12px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .wheel-spin-btn:disabled {
+            opacity: 0.5;
+        }
+        .wheel-result {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            min-height: 24px;
+        }
+        /* Reminder Settings */
+        .reminder-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+        }
+        .reminder-row + .reminder-row {
+            border-top: 1px solid var(--separator);
+        }
+        .reminder-label {
+            font-size: 15px;
+        }
+        .reminder-toggle {
+            width: 48px;
+            height: 28px;
+            border-radius: 14px;
+            background: var(--separator);
+            border: none;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.2s;
+        }
+        .reminder-toggle.on {
+            background: var(--green);
+        }
+        .reminder-toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            transition: transform 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .reminder-toggle.on::after {
+            transform: translateX(20px);
+        }
+        .reminder-interval {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-left: 8px;
+        }
+        /* Weekly Review */
+        .review-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            height: 100px;
+            padding: 0 4px;
+        }
+        .review-bar-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            justify-content: flex-end;
+        }
+        .review-bar {
+            width: 100%;
+            max-width: 28px;
+            border-radius: 4px 4px 0 0;
+            background: var(--primary);
+            min-height: 4px;
+            transition: height 0.5s ease;
+        }
+        .review-bar-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 40px;
+        }
+        .review-summary {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            text-align: center;
+        }
+        /* Mood Log */
+        .mood-select {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .mood-emoji {
+            font-size: 36px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 12px;
+            transition: all 0.2s;
+            opacity: 0.4;
+            border: none;
+            background: none;
+        }
+        .mood-emoji.selected {
+            opacity: 1;
+            transform: scale(1.2);
+            background: var(--bg);
+        }
+        .mood-note-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--separator);
+            border-radius: 8px;
+            font-size: 14px;
+            background: var(--bg);
+            color: var(--text);
+            outline: none;
+            margin-top: 8px;
+            resize: none;
+        }
+        .mood-save-btn {
+            width: 100%;
+            padding: 8px;
+            margin-top: 8px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .mood-history {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .mood-history-item {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+        .mood-history-item .emoji {
+            font-size: 24px;
+            display: block;
+        }
+        /* Heatmap */
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+        }
+        .heatmap-cell {
+            aspect-ratio: 1;
+            border-radius: 3px;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            cursor: pointer;
+            position: relative;
+        }
+        .heatmap-cell.l0 { background: var(--bg); }
+        .heatmap-cell.l1 { background: #c6e48b; }
+        .heatmap-cell.l2 { background: #7bc96f; }
+        .heatmap-cell.l3 { background: #239a3b; }
+        .heatmap-cell.l4 { background: #196127; color: #fff; }
+        .heatmap-legend {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            justify-content: flex-end;
+            margin-top: 6px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+        .heatmap-legend .block {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+        .heatmap-weekday {
+            font-size: 9px;
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 2px 0;
+        }
+        .heatmap-tooltip {
+            position: absolute;
+            background: var(--card);
+            border: 1px solid var(--separator);
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 12px;
+            z-index: 50;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            pointer-events: none;
+            white-space: nowrap;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        /* Accounting */
+        .acct-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .acct-row .input-field { flex: 1; }
+        .acct-row .input-field[type="number"] { width: 90px; flex: none; }
+        .acct-add-btn {
+            padding: 8px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .acct-summary {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 8px;
+        }
+        .acct-summary-item {
+            flex: 1;
+            text-align: center;
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 8px;
+        }
+        .acct-summary-num {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .acct-summary-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .acct-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            font-size: 14px;
+            border-bottom: 1px solid var(--separator);
+        }
+        .acct-entry:last-child { border-bottom: none; }
+        .acct-entry .amount {
+            font-weight: 600;
+            color: var(--orange);
+        }
+        .acct-entry .del-btn {
+            background: none;
+            border: none;
+            color: var(--red);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px;
+        }
+        .acct-cat-manage {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+        .acct-cat-tag {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            background: var(--bg);
+            border: 1px solid var(--separator);
+            cursor: pointer;
+        }
+        .acct-cat-tag.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        /* Life sortable handle */
+        .life-card-handle {
+            cursor: grab;
+            color: var(--text-secondary);
+            font-size: 16px;
+            padding: 4px 0;
+            text-align: center;
+            user-select: none;
+        }
+        .life-card-handle:active {
+            cursor: grabbing;
+        }
+        /* Night reminder modal */
+        .night-reminder-modal {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card);
+            border-radius: 16px 16px 0 0;
+            padding: 20px;
+            z-index: 200;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        .night-reminder-modal.active {
+            transform: translateY(0);
+        }
+        .night-reminder-modal .modal-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .night-reminder-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 199;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .night-reminder-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
     </style>
 </head>
 <body>
@@ -1197,58 +1740,54 @@
             </div>
         </div>
 
-        <!-- Page 2: 习惯 -->
-        <div id="page-habits" class="page">
+        <!-- Page 2: 习惯和待办 -->
+        <div id="page-habits-todos" class="page">
             <div class="nav-bar">
                 <div class="nav-header">
-                    <div class="nav-title">习惯</div>
-                    <button class="nav-btn" onclick="showAddHabitModal()">+</button>
+                    <div class="nav-title">习惯和待办</div>
+                    <button class="nav-btn" onclick="showCreateModal()">+</button>
                 </div>
                 <div class="nav-bar-content" style="padding: 0 20px 10px;">
-                    <div class="segmented-control" id="habit-segment">
-                        <button class="segment-item active" data-filter="all" onclick="filterHabits('all')">全部</button>
-                        <button class="segment-item" data-filter="工作" onclick="filterHabits('工作')">工作</button>
-                        <button class="segment-item" data-filter="学习" onclick="filterHabits('学习')">学习</button>
-                        <button class="segment-item" data-filter="生活" onclick="filterHabits('生活')">生活</button>
+                    <div class="segmented-control" id="ht-segment">
+                        <button class="segment-item active" data-filter="all" onclick="filterHabitsTodos('all')">全部</button>
+                        <button class="segment-item" data-filter="工作" onclick="filterHabitsTodos('工作')">工作</button>
+                        <button class="segment-item" data-filter="学习" onclick="filterHabitsTodos('学习')">学习</button>
+                        <button class="segment-item" data-filter="生活" onclick="filterHabitsTodos('生活')">生活</button>
                     </div>
                 </div>
             </div>
             <div class="content">
-                <div id="habits-list"></div>
-                <div id="no-habits" class="empty-state" style="display: none;">
+                <div id="ht-list"></div>
+                <div id="no-ht-items" class="empty-state" style="display: none;">
                     <div class="empty-state-icon">🌟</div>
-                    <div class="empty-state-text">还没有习惯，点击 + 添加</div>
+                    <div class="empty-state-text">还没有内容，点击 + 添加</div>
+                </div>
+                <div id="ht-completed-section" style="display: none;">
+                    <div style="font-size: 18px; font-weight: 600; margin: 20px 0 12px; cursor: pointer;" onclick="toggleHTCompleted()">
+                        已完成 <span id="ht-completed-count">0</span> <span id="ht-completed-arrow">▼</span>
+                    </div>
+                    <div id="ht-completed-list" style="display: none;"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Page 3: 待办 -->
-        <div id="page-todos" class="page">
+        <!-- Page 3: 生活 -->
+        <div id="page-life" class="page">
             <div class="nav-bar">
                 <div class="nav-header">
-                    <div class="nav-title">待办</div>
-                    <button class="nav-btn" onclick="showAddTodoModal()">+</button>
-                </div>
-                <div class="nav-bar-content" style="padding: 0 20px 10px;">
-                    <div class="segmented-control" id="todo-segment">
-                        <button class="segment-item active" data-filter="all" onclick="filterTodos('all')">全部</button>
-                        <button class="segment-item" data-filter="工作" onclick="filterTodos('工作')">工作</button>
-                        <button class="segment-item" data-filter="生活" onclick="filterTodos('生活')">生活</button>
-                        <button class="segment-item" data-filter="学习" onclick="filterTodos('学习')">学习</button>
+                    <div class="nav-title">生活</div>
+                    <div style="display:flex;gap:8px;">
+                        <button class="nav-btn" onclick="showLifeSettingsModal()" style="font-size:18px;">⚙️</button>
                     </div>
                 </div>
             </div>
             <div class="content">
-                <div id="todos-list"></div>
-                <div id="no-todos" class="empty-state" style="display: none;">
-                    <div class="empty-state-icon">📝</div>
-                    <div class="empty-state-text">还没有待办，点击 + 添加</div>
+                <div id="life-cards-container">
+                    <!-- Modules will be rendered here by JS -->
                 </div>
-                <div id="completed-todos-section" style="display: none;">
-                    <div style="font-size: 18px; font-weight: 600; margin: 20px 0 12px; cursor: pointer;" onclick="toggleCompletedTodos()">
-                        已完成 <span id="completed-count">0</span> <span id="completed-arrow">▼</span>
-                    </div>
-                    <div id="completed-todos-list" style="display: none;"></div>
+                <div id="life-empty" class="empty-state" style="display:none;">
+                    <div class="empty-state-icon">🌱</div>
+                    <div class="empty-state-text">生活模块加载中...</div>
                 </div>
             </div>
         </div>
@@ -1424,18 +1963,18 @@
                 </svg>
                 <span class="tab-label">今日</span>
             </div>
-            <div class="tab-item" data-page="habits" onclick="switchPage('habits')">
+            <div class="tab-item" data-page="habits-todos" onclick="switchPage('habits-todos')">
                 <svg class="tab-icon" viewBox="0 0 24 24">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                 </svg>
-                <span class="tab-label">习惯</span>
+                <span class="tab-label">习惯和待办</span>
+                <span class="badge" id="ht-badge" style="display: none;">0</span>
             </div>
-            <div class="tab-item" data-page="todos" onclick="switchPage('todos')">
+            <div class="tab-item" data-page="life" onclick="switchPage('life')">
                 <svg class="tab-icon" viewBox="0 0 24 24">
-                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM10 7H8v10h2V7zm4 0h-2v10h2V7zm4 0h-2v10h2V7z"/>
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                 </svg>
-                <span class="tab-label">待办</span>
-                <span class="badge" id="todo-badge" style="display: none;">0</span>
+                <span class="tab-label">生活</span>
             </div>
             <div class="tab-item" data-page="info" onclick="switchPage('info')">
                 <svg class="tab-icon" viewBox="0 0 24 24">
@@ -1452,72 +1991,73 @@
         </div>
     </div>
 
-    <!-- Add Habit Modal -->
-    <div class="modal-overlay" id="add-habit-modal">
+    <!-- Unified Create Modal -->
+    <div class="modal-overlay" id="create-modal">
         <div class="modal-sheet">
             <div class="modal-header">
-                <button class="modal-cancel" onclick="hideAddHabitModal()">取消</button>
-                <div class="modal-title">新建习惯</div>
-                <button class="modal-save" onclick="addHabit()">保存</button>
+                <button class="modal-cancel" onclick="hideCreateModal()">取消</button>
+                <div class="modal-title">新建</div>
+                <button class="modal-save" onclick="createItem()">保存</button>
             </div>
-            <div class="form-group">
-                <input type="text" class="input-field" id="habit-name-input" placeholder="习惯名称（如：早起）">
+            <div style="padding:0 20px 12px;">
+                <div class="segmented-control" id="create-type-segment">
+                    <button class="segment-item active" data-type="habit" onclick="switchCreateType('habit')">习惯</button>
+                    <button class="segment-item" data-type="todo" onclick="switchCreateType('todo')">待办</button>
+                </div>
             </div>
-            <div class="form-group">
-                <label class="form-label">分类</label>
-                <select class="form-select" id="habit-category">
-                    <option value="工作">工作</option>
-                    <option value="学习">学习</option>
-                    <option value="生活">生活</option>
-                </select>
+            <!-- Habit Fields -->
+            <div id="create-habit-fields">
+                <div class="form-group">
+                    <input type="text" class="input-field" id="create-habit-name" placeholder="习惯名称（如：早起）">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">分类</label>
+                    <select class="form-select" id="create-habit-category">
+                        <option value="工作">工作</option>
+                        <option value="学习">学习</option>
+                        <option value="生活">生活</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">初始已打卡天数</label>
+                    <input type="number" class="input-field" id="create-habit-base" value="0" min="0" style="width:100px;">
+                </div>
             </div>
-            <div class="form-group">
-                <label class="form-label">初始已打卡天数</label>
-                <input type="number" class="input-field" id="habit-base" value="0" min="0" style="width:100px;">
-            </div>
-        </div>
-    </div>
-
-    <!-- Add Todo Modal -->
-    <div class="modal-overlay" id="add-todo-modal">
-        <div class="modal-sheet">
-            <div class="modal-header">
-                <button class="modal-cancel" onclick="hideAddTodoModal()">取消</button>
-                <div class="modal-title">新建待办</div>
-                <button class="modal-save" onclick="addTodo()">保存</button>
-            </div>
-            <div class="form-group">
-                <input type="text" class="input-field" id="todo-title-input" placeholder="待办标题">
-            </div>
-            <div class="form-group">
-                <label class="form-label">优先级</label>
-                <select class="form-select" id="todo-priority">
-                    <option value="无">无</option>
-                    <option value="P0">P0（紧急）</option>
-                    <option value="P1">P1（高）</option>
-                    <option value="P2">P2（中）</option>
-                    <option value="P3">P3（普通）</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">提醒时间（可选）</label>
-                <input type="datetime-local" class="input-field" id="todo-reminder-time">
-            </div>
-            <div class="form-group">
-                <label class="form-label">分类</label>
-                <select class="form-select" id="todo-category">
-                    <option value="工作">工作</option>
-                    <option value="生活">生活</option>
-                    <option value="学习">学习</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">截止日期</label>
-                <input type="date" class="input-field" id="todo-due-date">
-            </div>
-            <div class="form-group">
-                <label class="form-label">备注</label>
-                <textarea class="input-field" id="todo-notes" placeholder="可选备注"></textarea>
+            <!-- Todo Fields -->
+            <div id="create-todo-fields" style="display:none;">
+                <div class="form-group">
+                    <input type="text" class="input-field" id="create-todo-title" placeholder="待办标题">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">优先级</label>
+                    <select class="form-select" id="create-todo-priority">
+                        <option value="无">无</option>
+                        <option value="P0">P0（紧急）</option>
+                        <option value="P1">P1（高）</option>
+                        <option value="P2">P2（中）</option>
+                        <option value="P3">P3（普通）</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">分类</label>
+                    <select class="form-select" id="create-todo-category">
+                        <option value="工作">工作</option>
+                        <option value="生活">生活</option>
+                        <option value="学习">学习</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">截止日期</label>
+                    <input type="date" class="input-field" id="create-todo-due">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">提醒时间（可选）</label>
+                    <input type="datetime-local" class="input-field" id="create-todo-reminder">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">备注</label>
+                    <textarea class="input-field" id="create-todo-notes" placeholder="可选备注"></textarea>
+                </div>
             </div>
         </div>
     </div>
@@ -1750,8 +2290,7 @@
         // ==================== Navigation ====================
         let currentPage = 'today';
         let currentInfoTab = 'weather';
-        let currentTodoFilter = 'all';
-        let currentHabitFilter = 'all';
+        let currentHTFilter = 'all';
 
         function switchPage(page) {
             currentPage = page;
@@ -1760,8 +2299,8 @@
             document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
             document.querySelector(`.tab-item[data-page="${page}"]`).classList.add('active');
             if (page === 'today') loadTodayPage();
-            if (page === 'habits') loadHabitsPage();
-            if (page === 'todos') loadTodosPage();
+            if (page === 'habits-todos') loadHabitsTodosPage();
+            if (page === 'life') loadLifePage();
             if (page === 'info') loadInfoPage();
             if (page === 'work') loadWorkPage();
         }
@@ -1777,11 +2316,11 @@
             if (tab === 'horoscope') loadHoroscope();
         }
 
-        function filterTodos(filter) {
-            currentTodoFilter = filter;
-            document.querySelectorAll('#todo-segment .segment-item').forEach(s => s.classList.remove('active'));
-            document.querySelector(`#todo-segment .segment-item[data-filter="${filter}"]`).classList.add('active');
-            loadTodosPage();
+        function filterHabitsTodos(filter) {
+            currentHTFilter = filter;
+            document.querySelectorAll('#ht-segment .segment-item').forEach(s => s.classList.remove('active'));
+            document.querySelector(`#ht-segment .segment-item[data-filter="${filter}"]`).classList.add('active');
+            loadHabitsTodosPage();
         }
 
         // ==================== Utilities ====================
@@ -1916,50 +2455,144 @@
             summary.textContent = horoscope.advice;
         }
 
-        // ==================== Page: Habits ====================
-        function filterHabits(filter) {
-            currentHabitFilter = filter;
-            document.querySelectorAll('#habit-segment .segment-item').forEach(s => s.classList.remove('active'));
-            document.querySelector(`#habit-segment .segment-item[data-filter="${filter}"]`).classList.add('active');
-            loadHabitsPage();
-        }
-
-        function loadHabitsPage() {
-            const container = document.getElementById('habits-list');
-            const emptyState = document.getElementById('no-habits');
+        // ==================== Page: Habits & Todos (Merged) ====================
+        function loadHabitsTodosPage() {
+            const container = document.getElementById('ht-list');
+            const emptyState = document.getElementById('no-ht-items');
             let habits = APP_DATA.habits;
-            if (currentHabitFilter !== 'all') {
-                habits = habits.filter(h => h.category === currentHabitFilter);
+            let todos = APP_DATA.todos.filter(t => !t.done);
+            if (currentHTFilter !== 'all') {
+                habits = habits.filter(h => h.category === currentHTFilter);
+                todos = todos.filter(t => t.category === currentHTFilter);
             }
-            if (habits.length === 0) {
+            if (habits.length === 0 && todos.length === 0) {
                 container.innerHTML = '';
                 emptyState.style.display = 'block';
-                return;
+            } else {
+                emptyState.style.display = 'none';
+                let html = '';
+                if (habits.length > 0) {
+                    html += '<div style="font-size:15px;font-weight:600;color:var(--text-secondary);margin:4px 0 8px;">📌 习惯</div>';
+                    html += habits.map(habit => {
+                        const today = getTodayString();
+                        const isChecked = habit.checkins && habit.checkins.includes(today);
+                        const streak = getTotalDays(habit);
+                        const weekDots = getWeekDots(habit);
+                        return `<div class="habit-item fade-in" style="flex-direction:column;align-items:stretch;margin-bottom:8px;"><div style="display:flex;align-items:center;margin-bottom:6px;"><div class="habit-check ${isChecked ? 'checked' : ''}" onclick="toggleHabitCheckin('${habit.id}')"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg></div><div class="habit-info" style="flex:1;"><div class="habit-name">${habit.name} <span class="category-tag">${habit.category || '生活'}</span></div><div class="habit-streak" style="cursor:pointer" onclick="showCalendarModal('${habit.id}')">📅 已打卡${streak}天</div></div><button class="nav-btn" onclick="deleteHabit('${habit.id}')" style="color:var(--red);font-size:16px;">🗑️</button></div><div class="week-dots">${weekDots.map(dot => `<div class="week-dot ${dot ? 'filled' : ''}"></div>`).join('')}</div></div>`;
+                    }).join('');
+                }
+                if (todos.length > 0) {
+                    const PRIO_ORDER = { 'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3, '无': 4 };
+                    todos.sort((a, b) => {
+                        const pa = PRIO_ORDER[a.priority] ?? 4;
+                        const pb = PRIO_ORDER[b.priority] ?? 4;
+                        if (pa !== pb) return pa - pb;
+                        if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
+                        if (a.dueDate) return -1;
+                        if (b.dueDate) return 1;
+                        return 0;
+                    });
+                    html += '<div style="font-size:15px;font-weight:600;color:var(--text-secondary);margin:12px 0 8px;">✅ 待办</div>';
+                    html += todos.map(todo => renderTodoItem(todo)).join('');
+                }
+                html += '<div style="height:12px;"></div>';
+                container.innerHTML = html;
             }
-            emptyState.style.display = 'none';
-            container.innerHTML = habits.map(habit => {
-                const today = getTodayString();
-                const isChecked = habit.checkins && habit.checkins.includes(today);
-                const streak = getTotalDays(habit);
-                const weekDots = getWeekDots(habit);
-                return `
-                    <div class="habit-item fade-in" style="flex-direction: column; align-items: stretch;">
-                        <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                            <div class="habit-check ${isChecked ? 'checked' : ''}" onclick="toggleHabitCheckin('${habit.id}')">
-                                <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-                            </div>
-                            <div class="habit-info" style="flex: 1;">
-                                <div class="habit-name">${habit.name} <span class="category-tag">${habit.category || '生活'}</span></div>
-                                <div class="habit-streak" style="cursor:pointer" onclick="showCalendarModal('${habit.id}')">📅 已打卡${streak}天</div>
-                            </div>
-                            <button class="nav-btn" onclick="deleteHabit('${habit.id}')" style="color: var(--red);">🗑️</button>
-                        </div>
-                        <div class="week-dots">
-                            ${weekDots.map(dot => `<div class="week-dot ${dot ? 'filled' : ''}"></div>`).join('')}
-                        </div>
-                    </div>
-                `;
-            }).join('');
+            const completedSection = document.getElementById('ht-completed-section');
+            const completed = APP_DATA.todos.filter(t => t.done);
+            if (completed.length > 0) {
+                completedSection.style.display = 'block';
+                document.getElementById('ht-completed-count').textContent = completed.length;
+            } else {
+                completedSection.style.display = 'none';
+            }
+            updateHTBadge();
+        }
+
+        function toggleHTCompleted() {
+            const list = document.getElementById('ht-completed-list');
+            const arrow = document.getElementById('ht-completed-arrow');
+            if (list.style.display === 'none') {
+                list.style.display = 'block';
+                arrow.textContent = '▲';
+                list.innerHTML = APP_DATA.todos.filter(t => t.done).map(todo => renderTodoItem(todo)).join('');
+            } else {
+                list.style.display = 'none';
+                arrow.textContent = '▼';
+            }
+        }
+
+        function updateHTBadge() {
+            const badge = document.getElementById('ht-badge');
+            const count = APP_DATA.todos.filter(t => !t.done).length;
+            if (count > 0) {
+                badge.style.display = 'flex';
+                badge.textContent = count > 99 ? '99+' : count;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        // ==================== Unified Create Modal ====================
+        let _createType = 'habit';
+
+        function switchCreateType(type) {
+            _createType = type;
+            document.querySelectorAll('#create-type-segment .segment-item').forEach(s => s.classList.remove('active'));
+            document.querySelector(`#create-type-segment .segment-item[data-type="${type}"]`).classList.add('active');
+            document.getElementById('create-habit-fields').style.display = type === 'habit' ? '' : 'none';
+            document.getElementById('create-todo-fields').style.display = type === 'todo' ? '' : 'none';
+        }
+
+        function showCreateModal() {
+            document.getElementById('create-modal').classList.add('active');
+            switchCreateType('habit');
+            document.getElementById('create-todo-due').value = getTodayString();
+        }
+
+        function hideCreateModal() {
+            document.getElementById('create-modal').classList.remove('active');
+            document.getElementById('create-habit-name').value = '';
+            document.getElementById('create-todo-title').value = '';
+            document.getElementById('create-todo-notes').value = '';
+        }
+
+        function createItem() {
+            if (_createType === 'habit') {
+                const name = document.getElementById('create-habit-name').value.trim();
+                if (!name) { showToast('请输入习惯名称'); return; }
+                APP_DATA.habits.push({
+                    id: generateId(),
+                    name: name,
+                    category: document.getElementById('create-habit-category').value,
+                    created: getTodayString(),
+                    baseCount: parseInt(document.getElementById('create-habit-base').value) || 0,
+                    checkins: []
+                });
+                saveData();
+                hideCreateModal();
+                loadHabitsTodosPage();
+                showToast('习惯已添加');
+            } else {
+                const title = document.getElementById('create-todo-title').value.trim();
+                if (!title) { showToast('请输入待办标题'); return; }
+                APP_DATA.todos.push({
+                    id: generateId(),
+                    title: title,
+                    priority: document.getElementById('create-todo-priority').value,
+                    category: document.getElementById('create-todo-category').value,
+                    dueDate: document.getElementById('create-todo-due').value,
+                    notes: document.getElementById('create-todo-notes').value,
+                    reminderTime: document.getElementById('create-todo-reminder').value,
+                    done: false,
+                    doneDate: null,
+                    reminderNotified: false
+                });
+                saveData();
+                hideCreateModal();
+                loadHabitsTodosPage();
+                showToast('待办已添加');
+            }
         }
 
         function getTotalDays(habit) {
@@ -1989,90 +2622,25 @@
                 logActivity('habit_checkin', { habitId, habitName: habit.name, date: today });
                 showToast('✅ 打卡成功');
                 if (navigator.vibrate) navigator.vibrate(10);
+                addPartnerEnergy(3);
+                checkAchievements();
             } else {
                 habit.checkins.splice(idx, 1);
             }
             saveData();
-            loadHabitsPage();
+            loadHabitsTodosPage();
             if (currentPage === 'today') loadTodayHabits();
-        }
-
-        function showAddHabitModal() {
-            document.getElementById('add-habit-modal').classList.add('active');
-        }
-
-        function hideAddHabitModal() {
-            document.getElementById('add-habit-modal').classList.remove('active');
-            document.getElementById('habit-name-input').value = '';
-            document.getElementById('habit-category').selectedIndex = 0;
-        }
-
-        function addHabit() {
-            const name = document.getElementById('habit-name-input').value.trim();
-            if (!name) {
-                showToast('请输入习惯名称');
-                return;
-            }
-            const baseVal = parseInt(document.getElementById('habit-base').value) || 0;
-            APP_DATA.habits.push({
-                id: generateId(),
-                name: name,
-                category: document.getElementById('habit-category').value,
-                created: getTodayString(),
-                baseCount: baseVal,
-                checkins: []
-            });
-            saveData();
-            hideAddHabitModal();
-            loadHabitsPage();
-            showToast('习惯已添加');
         }
 
         function deleteHabit(habitId) {
             if (!confirm('确定删除这个习惯吗？')) return;
             APP_DATA.habits = APP_DATA.habits.filter(h => h.id !== habitId);
             saveData();
-            loadHabitsPage();
+            loadHabitsTodosPage();
             showToast('习惯已删除');
         }
 
-        // ==================== Page: Todos ====================
-        function loadTodosPage() {
-            const container = document.getElementById('todos-list');
-            const emptyState = document.getElementById('no-todos');
-            const completedSection = document.getElementById('completed-todos-section');
-            let todos = APP_DATA.todos.filter(t => !t.done);
-            if (currentTodoFilter !== 'all') {
-                todos = todos.filter(t => t.category === currentTodoFilter);
-            }
-            // Sort by priority (P0 > P1 > P2 > P3 > 无) then by due date
-            const PRIO_ORDER = { 'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3, '无': 4 };
-            todos.sort((a, b) => {
-                const pa = PRIO_ORDER[a.priority] ?? 4;
-                const pb = PRIO_ORDER[b.priority] ?? 4;
-                if (pa !== pb) return pa - pb;
-                if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
-                if (a.dueDate) return -1;
-                if (b.dueDate) return 1;
-                return 0;
-            });
-            if (todos.length === 0) {
-                container.innerHTML = '';
-                emptyState.style.display = 'block';
-            } else {
-                emptyState.style.display = 'none';
-                container.innerHTML = todos.map(todo => renderTodoItem(todo)).join('');
-            }
-            const completed = APP_DATA.todos.filter(t => t.done);
-            if (completed.length > 0) {
-                completedSection.style.display = 'block';
-                document.getElementById('completed-count').textContent = completed.length;
-            } else {
-                completedSection.style.display = 'none';
-            }
-            updateTodoBadge();
-        }
-
+        // ==================== Todo Helpers (shared) ====================
         function getPriorityStarClass(priority) {
             if (priority === 'P0') return 'p0';
             if (priority === 'P1') return 'p1';
@@ -2095,24 +2663,7 @@
             const priorityClass = getPriorityStarClass(todo.priority);
             const priorityLabel = getPriorityStarLabel(todo.priority);
             const displayPriority = todo.priority === '无' ? '' : todo.priority;
-            return `
-                <div class="todo-item fade-in">
-                    <div class="todo-checkbox ${todo.done ? 'checked' : ''}" onclick="toggleTodo('${todo.id}')">
-                        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-                    </div>
-                    <div class="todo-content">
-                        <div class="todo-title ${todo.done ? 'completed' : ''}">${todo.title}</div>
-                        <div class="todo-meta">
-                            ${displayPriority ? `<span class="priority-badge priority-${todo.priority === 'P0' ? 'high' : todo.priority === 'P1' ? 'medium' : 'normal'}">${todo.priority}</span>` : ''}
-                            <span class="category-tag">${todo.category}</span>
-                            ${todo.dueDate ? `<span class="todo-due ${isOverdue ? 'overdue' : ''}">${todo.dueDate}</span>` : ''}
-                            ${todo.reminderTime ? `<span class="todo-due" style="font-size:12px;">🔔 ${todo.reminderTime.slice(11, 16)}</span>` : ''}
-                        </div>
-                    </div>
-                    <div class="todo-priority-star ${priorityClass}" onclick="cyclePriority('${todo.id}', event)" title="点击切换优先级">${priorityLabel}</div>
-                    <div class="todo-delete" onclick="deleteTodo('${todo.id}')" title="删除">✕</div>
-                </div>
-            `;
+            return `<div class="todo-item fade-in"><div class="todo-checkbox ${todo.done ? 'checked' : ''}" onclick="toggleTodo('${todo.id}')"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg></div><div class="todo-content"><div class="todo-title ${todo.done ? 'completed' : ''}">${todo.title}</div><div class="todo-meta">${displayPriority ? `<span class="priority-badge priority-${todo.priority === 'P0' ? 'high' : todo.priority === 'P1' ? 'medium' : 'normal'}">${todo.priority}</span>` : ''}<span class="category-tag">${todo.category}</span>${todo.dueDate ? `<span class="todo-due ${isOverdue ? 'overdue' : ''}">${todo.dueDate}</span>` : ''}${todo.reminderTime ? `<span class="todo-due" style="font-size:12px;">🔔 ${todo.reminderTime.slice(11, 16)}</span>` : ''}</div></div><div class="todo-priority-star ${priorityClass}" onclick="cyclePriority('${todo.id}', event)" title="点击切换优先级">${priorityLabel}</div><div class="todo-delete" onclick="deleteTodo('${todo.id}')" title="删除">✕</div></div>`;
         }
 
         const PRIORITY_CYCLE = ['无', 'P0', 'P1', 'P2', 'P3'];
@@ -2125,7 +2676,7 @@
             const nextIdx = (currentIdx + 1) % PRIORITY_CYCLE.length;
             todo.priority = PRIORITY_CYCLE[nextIdx];
             saveData();
-            loadTodosPage();
+            loadHabitsTodosPage();
             if (currentPage === 'today') loadTodayTodos();
         }
 
@@ -2139,9 +2690,11 @@
                 logActivity('todo_complete', { todoId, title: todo.title, doneDate: getTodayString() });
                 showToast('✅ 已完成');
                 if (navigator.vibrate) navigator.vibrate(10);
+                addPartnerEnergy(3);
+                checkAchievements();
             }
             saveData();
-            loadTodosPage();
+            loadHabitsTodosPage();
             if (currentPage === 'today') loadTodayTodos();
         }
 
@@ -2149,70 +2702,9 @@
             if (!confirm('确定要删除这条待办吗？')) return;
             APP_DATA.todos = APP_DATA.todos.filter(t => t.id !== todoId);
             saveData();
-            loadTodosPage();
+            loadHabitsTodosPage();
             if (currentPage === 'today') loadTodayTodos();
             showToast('已删除');
-        }
-
-        function showAddTodoModal() {
-            document.getElementById('add-todo-modal').classList.add('active');
-            document.getElementById('todo-due-date').value = getTodayString();
-            document.getElementById('todo-reminder-time').value = '';
-        }
-
-        function hideAddTodoModal() {
-            document.getElementById('add-todo-modal').classList.remove('active');
-            document.getElementById('todo-title-input').value = '';
-            document.getElementById('todo-notes').value = '';
-        }
-
-        function addTodo() {
-            const title = document.getElementById('todo-title-input').value.trim();
-            if (!title) {
-                showToast('请输入待办标题');
-                return;
-            }
-            APP_DATA.todos.push({
-                id: generateId(),
-                title: title,
-                priority: document.getElementById('todo-priority').value,
-                category: document.getElementById('todo-category').value,
-                dueDate: document.getElementById('todo-due-date').value,
-                notes: document.getElementById('todo-notes').value,
-                reminderTime: document.getElementById('todo-reminder-time').value,
-                done: false,
-                doneDate: null,
-                reminderNotified: false
-            });
-            saveData();
-            hideAddTodoModal();
-            loadTodosPage();
-            showToast('待办已添加');
-        }
-
-        function toggleCompletedTodos() {
-            const list = document.getElementById('completed-todos-list');
-            const arrow = document.getElementById('completed-arrow');
-            if (list.style.display === 'none') {
-                list.style.display = 'block';
-                arrow.textContent = '▲';
-                const completed = APP_DATA.todos.filter(t => t.done);
-                list.innerHTML = completed.map(todo => renderTodoItem(todo)).join('');
-            } else {
-                list.style.display = 'none';
-                arrow.textContent = '▼';
-            }
-        }
-
-        function updateTodoBadge() {
-            const badge = document.getElementById('todo-badge');
-            const count = APP_DATA.todos.filter(t => !t.done).length;
-            if (count > 0) {
-                badge.style.display = 'flex';
-                badge.textContent = count > 99 ? '99+' : count;
-            } else {
-                badge.style.display = 'none';
-            }
         }
 
         // ==================== Page: Info ====================
@@ -2883,7 +3375,7 @@
             habit.checkins.sort();
             saveData();
             renderCalendar();
-            loadHabitsPage();
+            loadHabitsTodosPage();
             if (currentPage === 'today') loadTodayHabits();
         }
 
@@ -2918,6 +3410,546 @@
             }
         }
 
+        // ==================== Life Page ====================
+        const LIFE_KEYS = {
+            partner: 'zican_life_partner',
+            morning: 'zican_life_morning',
+            badges: 'zican_life_badges',
+            wheel: 'zican_life_wheel',
+            reminders: 'zican_life_reminders',
+            moods: 'zican_life_moods',
+            accounting: 'zican_life_accounting',
+            acctCats: 'zican_life_acct_cats',
+            cardOrder: 'zican_life_card_order'
+        };
+
+        function getLifeData(key, defaultVal) {
+            try {
+                const v = localStorage.getItem(key);
+                return v ? JSON.parse(v) : defaultVal;
+            } catch(e) { return defaultVal; }
+        }
+        function setLifeData(key, val) {
+            localStorage.setItem(key, JSON.stringify(val));
+        }
+
+        // Life card modules definition
+        const LIFE_MODULES = [
+            { id: 'partner', title: '🌟 虚拟伙伴' },
+            { id: 'morning', title: '🌅 早安' },
+            { id: 'badges', title: '🏆 成就徽章' },
+            { id: 'wheel', title: '🎡 幸运转盘' },
+            { id: 'reminders', title: '⏰ 提醒' },
+            { id: 'review', title: '📊 每周回顾' },
+            { id: 'mood', title: '😊 心情日志' },
+            { id: 'heatmap', title: '🔥 热力图' },
+            { id: 'accounting', title: '💰 极简记账' }
+        ];
+
+        function loadLifePage() {
+            const container = document.getElementById('life-cards-container');
+            const order = getLifeData(LIFE_KEYS.cardOrder, LIFE_MODULES.map(m => m.id));
+            let html = '';
+            order.forEach(id => {
+                const mod = LIFE_MODULES.find(m => m.id === id);
+                if (!mod) return;
+                html += `<div class="life-card" data-life-card="${id}"><div class="life-card-handle">⋮⋮</div><div class="life-card-title">${mod.title}</div><div id="life-module-${id}"></div></div>`;
+            });
+            container.innerHTML = html;
+            // Load each module
+            initPartner();
+            loadMorning();
+            loadBadges();
+            loadWheel();
+            loadReminders();
+            loadWeeklyReview();
+            loadMood();
+            loadHeatmap();
+            loadAccounting();
+            // Init sortable
+            initLifeSortable();
+            // Night reminder for accounting
+            scheduleNightReminder();
+        }
+
+        // --- Partner ---
+        function initPartner() {
+            let data = getLifeData(LIFE_KEYS.partner, { name: '小灿', energy: 50, messages: [], lastDecay: getTodayString() });
+            // Daily decay
+            if (data.lastDecay !== getTodayString()) {
+                data.energy = Math.max(0, data.energy - 5);
+                data.lastDecay = getTodayString();
+                setLifeData(LIFE_KEYS.partner, data);
+            }
+            const el = document.getElementById('life-module-partner');
+            if (!el) return;
+            el.innerHTML = `
+                <div class="partner-row">
+                    <div class="partner-avatar">🐱</div>
+                    <div class="partner-info">
+                        <div><input class="partner-name-input" id="partner-name-input" value="${data.name}" onchange="editPartnerName()" maxlength="6"></div>
+                        <div class="partner-energy-text">能量: ${data.energy}/100</div>
+                        <div class="energy-bar-bg"><div class="energy-bar-fill" style="width:${data.energy}%;"></div></div>
+                    </div>
+                </div>
+                <div class="partner-message" id="partner-message">${data.messages.length > 0 ? data.messages[data.messages.length - 1] : '你好呀！记得完成待办和打卡哦~'}</div>
+            `;
+        }
+
+        function editPartnerName() {
+            const data = getLifeData(LIFE_KEYS.partner, { name: '小灿', energy: 50, messages: [], lastDecay: getTodayString() });
+            data.name = document.getElementById('partner-name-input').value.trim() || '小灿';
+            setLifeData(LIFE_KEYS.partner, data);
+            showToast('名字已更新');
+        }
+
+        function addPartnerEnergy(amount) {
+            let data = getLifeData(LIFE_KEYS.partner, { name: '小灿', energy: 50, messages: [], lastDecay: getTodayString() });
+            data.energy = Math.min(100, data.energy + amount);
+            const msgs = ['继续加油！🎉', '太棒啦！✨', '好厉害！继续保持~', '你真棒！🌟', '哇，做得不错！'];
+            data.messages.push(msgs[Math.floor(Math.random() * msgs.length)]);
+            if (data.messages.length > 20) data.messages = data.messages.slice(-20);
+            setLifeData(LIFE_KEYS.partner, data);
+            const msgEl = document.getElementById('partner-message');
+            if (msgEl) msgEl.textContent = data.messages[data.messages.length - 1];
+            const fill = document.querySelector('#life-module-partner .energy-bar-fill');
+            if (fill) fill.style.width = data.energy + '%';
+            const txt = document.querySelector('#life-module-partner .partner-energy-text');
+            if (txt) txt.textContent = `能量: ${data.energy}/100`;
+        }
+
+        // --- Morning ---
+        function loadMorning() {
+            const el = document.getElementById('life-module-morning');
+            if (!el) return;
+            const last = getLifeData(LIFE_KEYS.morning, { lastDate: '' });
+            const alreadyDone = last.lastDate === getTodayString();
+            const greetings = ['早安！新的一天加油！☀️', '早上好，今天也要元气满满！✨', '早安呀，今天一定很棒！🌟', '起床啦，美好的一天开始啦！🌈', '早安！记得吃早餐哦~🥐'];
+            el.innerHTML = `
+                <button class="morning-btn" id="morning-btn" ${alreadyDone ? 'disabled' : ''} onclick="doMorningGreeting()">${alreadyDone ? '✅ 已打卡早安' : '🌅 早安打卡'}</button>
+                <div class="morning-msg" id="morning-msg">${alreadyDone ? '今天已经打过早安卡啦~' : '点击按钮开始新的一天'}</div>
+            `;
+        }
+
+        function doMorningGreeting() {
+            const greetings = ['早安！新的一天加油！☀️', '早上好，今天也要元气满满！✨', '早安呀，今天一定很棒！🌟', '起床啦，美好的一天开始啦！🌈', '早安！记得吃早餐哦~🥐'];
+            const msg = greetings[Math.floor(Math.random() * greetings.length)];
+            document.getElementById('morning-btn').disabled = true;
+            document.getElementById('morning-btn').textContent = '✅ 已打卡早安';
+            document.getElementById('morning-msg').textContent = msg;
+            setLifeData(LIFE_KEYS.morning, { lastDate: getTodayString() });
+            addPartnerEnergy(5);
+            checkAchievements();
+            showToast(msg);
+            if (navigator.vibrate) navigator.vibrate(10);
+        }
+
+        // --- Badges ---
+        const BADGE_DEFS = [
+            { id: 'earlybird', name: '早起鸟', desc: '连续 7 天早安', icon: '🐦', check: () => { const m = getLifeData(LIFE_KEYS.morning,{lastDate:''}); return m.lastDate ? 1 : 0; }, target: 7 },
+            { id: 'combo', name: '连击王者', desc: '连续 7 天完成待办', icon: '👑', check: () => { const t = APP_DATA.todos.filter(d => d.done && d.doneDate === getTodayString()); return t.length > 0 ? 1 : 0; }, target: 7 },
+            { id: 'checkin', name: '打卡狂魔', desc: '累计打卡 30 次', icon: '📅', check: () => { let c = 0; APP_DATA.habits.forEach(h => c += (h.checkins || []).length + (h.baseCount || 0)); return c; }, target: 30 },
+            { id: 'moodster', name: '心情记录家', desc: '累计心情记录 7 次', icon: '😊', check: () => { const m = getLifeData(LIFE_KEYS.moods, []); return m.length; }, target: 7 },
+            { id: 'bookkeeper', name: '记账新手', desc: '累计记账 10 笔', icon: '📒', check: () => { const a = getLifeData(LIFE_KEYS.accounting, []); return a.length; }, target: 10 }
+        ];
+
+        function loadBadges() {
+            const el = document.getElementById('life-module-badges');
+            if (!el) return;
+            const unlocked = getLifeData(LIFE_KEYS.badges, []);
+            let html = '<div class="badges-scroll">';
+            BADGE_DEFS.forEach(b => {
+                const isUnlocked = unlocked.includes(b.id);
+                const cur = Math.min(b.check(), b.target);
+                html += `<div class="badge-item ${isUnlocked ? 'unlocked' : ''}"><div class="badge-icon">${b.icon}</div><div class="badge-name">${b.name}</div><div class="badge-progress">${isUnlocked ? '✅' : cur + '/' + b.target}</div></div>`;
+            });
+            html += '</div>';
+            const allUnlocked = BADGE_DEFS.every(b => unlocked.includes(b.id));
+            if (allUnlocked) {
+                html += '<div style="text-align:center;margin-top:8px;font-size:14px;color:var(--orange);">🎉 集齐所有徽章！彩蛋已解锁！</div>';
+                document.documentElement.style.setProperty('--primary', '#FF6B9D');
+                setTimeout(() => { document.documentElement.style.setProperty('--primary', '#007AFF'); }, 5000);
+            }
+            el.innerHTML = html;
+        }
+
+        function checkAchievements() {
+            const unlocked = getLifeData(LIFE_KEYS.badges, []);
+            BADGE_DEFS.forEach(b => {
+                if (unlocked.includes(b.id)) return;
+                if (b.check() >= b.target) {
+                    unlocked.push(b.id);
+                    showToast(`🏆 解锁成就：${b.name}！`);
+                }
+            });
+            setLifeData(LIFE_KEYS.badges, unlocked);
+            loadBadges();
+        }
+
+        // --- Wheel ---
+        function loadWheel() {
+            const el = document.getElementById('life-module-wheel');
+            if (!el) return;
+            const last = getLifeData(LIFE_KEYS.wheel, { lastDate: '' });
+            const canSpin = last.lastDate !== getTodayString();
+            el.innerHTML = `
+                <div class="wheel-container">
+                    <div class="wheel-pointer">▼</div>
+                    <div class="wheel-canvas" id="wheel-canvas"></div>
+                </div>
+                <button class="wheel-spin-btn" id="wheel-btn" ${!canSpin ? 'disabled' : ''} onclick="spinWheel()">${canSpin ? '🎯 抽奖' : '✅ 今日已抽奖'}</button>
+                <div class="wheel-result" id="wheel-result">${canSpin ? '今天还没抽奖哦~' : ''}</div>
+            `;
+            // Draw wheel segments
+            const canvas = document.getElementById('wheel-canvas');
+            if (canvas) {
+                canvas.style.background = 'conic-gradient(#FF6B6B 0deg 60deg, #FFD93D 60deg 120deg, #6BCB77 120deg 180deg, #4D96FF 180deg 240deg, #FF6B6B 240deg 300deg, #FFD93D 300deg 360deg)';
+            }
+            if (!canSpin) {
+                const result = getLifeData(LIFE_KEYS.wheel, {}).lastResult || '';
+                document.getElementById('wheel-result').textContent = '今日已抽奖: ' + result;
+            }
+        }
+
+        const WHEEL_PRIZES = ['积分 +5', '积分 +10', '积分 +20', '能量 +5', '✨ 做自己的光', '✨ 今天超棒', '✨ 保持好心情', '✨ 你是最棒的'];
+
+        function spinWheel() {
+            const canvas = document.getElementById('wheel-canvas');
+            if (!canvas || canvas.classList.contains('spinning')) return;
+            canvas.classList.add('spinning');
+            const deg = 720 + Math.floor(Math.random() * 360);
+            canvas.style.transform = `rotate(${deg}deg)`;
+            const prizeIdx = Math.floor((360 - (deg % 360)) / 45) % 8;
+            document.getElementById('wheel-btn').disabled = true;
+            setTimeout(() => {
+                canvas.classList.remove('spinning');
+                const prize = WHEEL_PRIZES[prizeIdx];
+                document.getElementById('wheel-result').textContent = '🎉 ' + prize;
+                document.getElementById('wheel-btn').textContent = '✅ 今日已抽奖';
+                setLifeData(LIFE_KEYS.wheel, { lastDate: getTodayString(), lastResult: prize });
+                if (prize.includes('能量')) addPartnerEnergy(5);
+                showToast('🎉 ' + prize);
+            }, 3200);
+        }
+
+        // --- Reminders ---
+        function loadReminders() {
+            const el = document.getElementById('life-module-reminders');
+            if (!el) return;
+            const data = getLifeData(LIFE_KEYS.reminders, { drinkEnabled: false, standEnabled: false, standInterval: 45 });
+            el.innerHTML = `
+                <div class="reminder-row"><span class="reminder-label">💧 喝水提醒 (9:00-21:00 每小时)</span><button class="reminder-toggle ${data.drinkEnabled ? 'on' : ''}" onclick="toggleDrinkReminder()"></button></div>
+                <div class="reminder-row"><span class="reminder-label">🧍 站立提醒</span><div><span class="reminder-interval">每 <select id="stand-interval-select" onchange="changeStandInterval()" style="background:var(--bg);color:var(--text);border:1px solid var(--separator);border-radius:4px;padding:2px 4px;font-size:13px;"><option value="30">30</option><option value="45" ${data.standInterval === 45 ? 'selected' : ''}>45</option><option value="60">60</option></select> 分钟</span><button class="reminder-toggle ${data.standEnabled ? 'on' : ''}" onclick="toggleStandReminder()" style="margin-left:8px;"></button></div></div>
+            `;
+        }
+
+        function toggleDrinkReminder() {
+            const data = getLifeData(LIFE_KEYS.reminders, { drinkEnabled: false, standEnabled: false, standInterval: 45 });
+            data.drinkEnabled = !data.drinkEnabled;
+            setLifeData(LIFE_KEYS.reminders, data);
+            loadReminders();
+            startLifeReminders();
+            showToast(data.drinkEnabled ? '喝水提醒已开启' : '喝水提醒已关闭');
+        }
+
+        function toggleStandReminder() {
+            const data = getLifeData(LIFE_KEYS.reminders, { drinkEnabled: false, standEnabled: false, standInterval: 45 });
+            data.standEnabled = !data.standEnabled;
+            setLifeData(LIFE_KEYS.reminders, data);
+            loadReminders();
+            startLifeReminders();
+            showToast(data.standEnabled ? '站立提醒已开启' : '站立提醒已关闭');
+        }
+
+        function changeStandInterval() {
+            const data = getLifeData(LIFE_KEYS.reminders, { drinkEnabled: false, standEnabled: false, standInterval: 45 });
+            data.standInterval = parseInt(document.getElementById('stand-interval-select').value) || 45;
+            setLifeData(LIFE_KEYS.reminders, data);
+            startLifeReminders();
+        }
+
+        let _lifeReminderTimer = null;
+
+        function startLifeReminders() {
+            if (_lifeReminderTimer) clearInterval(_lifeReminderTimer);
+            const data = getLifeData(LIFE_KEYS.reminders, { drinkEnabled: false, standEnabled: false, standInterval: 45 });
+            if (!data.drinkEnabled && !data.standEnabled) return;
+            let drinkTick = 0, standTick = 0;
+            _lifeReminderTimer = setInterval(() => {
+                const now = new Date();
+                const h = now.getHours();
+                if (h < 9 || h >= 21) return; // Only 9am-9pm
+                if (data.drinkEnabled) {
+                    drinkTick++;
+                    if (drinkTick >= 60) { // 60 * 1min = 1 hour
+                        drinkTick = 0;
+                        if (Notification.permission === 'granted') new Notification('💧 喝水提醒', { body: '该喝水啦！', icon: '💧' });
+                    }
+                }
+                if (data.standEnabled) {
+                    standTick++;
+                    if (standTick >= data.standInterval) {
+                        standTick = 0;
+                        if (Notification.permission === 'granted') new Notification('🧍 站立提醒', { body: '起来走两步！活动一下身体~', icon: '🧍' });
+                    }
+                }
+            }, 60000); // every minute
+        }
+
+        // --- Weekly Review ---
+        function loadWeeklyReview() {
+            const el = document.getElementById('life-module-review');
+            if (!el) return;
+            const weekStart = new Date();
+            weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+            weekStart.setHours(0,0,0,0);
+            const weekDates = [];
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(weekStart);
+                d.setDate(d.getDate() + i);
+                weekDates.push(formatDate(d));
+            }
+            const days = ['日','一','二','三','四','五','六'];
+            let maxDays = 0;
+            const habitCounts = APP_DATA.habits.map(h => {
+                const count = weekDates.filter(d => h.checkins && h.checkins.includes(d)).length;
+                if (count > maxDays) maxDays = count;
+                return { name: h.name, count };
+            });
+            if (habitCounts.length === 0) {
+                el.innerHTML = '<div class="empty-state-text" style="font-size:14px;">暂无习惯数据</div>';
+                return;
+            }
+            let html = '<div class="review-bars">';
+            habitCounts.forEach(h => {
+                const pct = maxDays > 0 ? (h.count / maxDays) * 100 : 0;
+                html += `<div class="review-bar-wrap"><div class="review-bar" style="height:${Math.max(4, pct)}%;"></div><div class="review-bar-label">${h.name.length > 4 ? h.name.slice(0,4) + '..' : h.name}</div></div>`;
+            });
+            html += '</div>';
+            html += `<div class="review-summary">本周共打卡 ${habitCounts.reduce((s, h) => s + h.count, 0)} 天</div>`;
+            el.innerHTML = html;
+        }
+
+        // --- Mood ---
+        function loadMood() {
+            const el = document.getElementById('life-module-mood');
+            if (!el) return;
+            const moods = getLifeData(LIFE_KEYS.moods, []);
+            const todayMood = moods.find(m => m.date === getTodayString());
+            const recent = moods.slice(-7);
+            el.innerHTML = `
+                <div class="mood-select">
+                    <button class="mood-emoji ${todayMood && todayMood.emoji === '😄' ? 'selected' : ''}" onclick="selectMood('😄')">😄</button>
+                    <button class="mood-emoji ${todayMood && todayMood.emoji === '😐' ? 'selected' : ''}" onclick="selectMood('😐')">😐</button>
+                    <button class="mood-emoji ${todayMood && todayMood.emoji === '😢' ? 'selected' : ''}" onclick="selectMood('😢')">😢</button>
+                </div>
+                <textarea class="mood-note-input" id="mood-note" placeholder="今天有什么想记录的？(可选)" rows="2">${todayMood ? todayMood.note || '' : ''}</textarea>
+                <button class="mood-save-btn" onclick="saveMood()">${todayMood ? '更新心情' : '记录今天的心情'}</button>
+                <div class="mood-history">${recent.map(m => `<div class="mood-history-item"><span class="emoji">${m.emoji}</span><span>${m.date.slice(5)}</span></div>`).join('')}</div>
+            `;
+        }
+
+        let _selectedMood = null;
+
+        function selectMood(emoji) {
+            _selectedMood = emoji;
+            document.querySelectorAll('#life-module-mood .mood-emoji').forEach(e => e.classList.toggle('selected', e.textContent === emoji));
+        }
+
+        function saveMood() {
+            const emoji = _selectedMood || document.querySelector('#life-module-mood .mood-emoji.selected');
+            if (!emoji) { showToast('请选择一个心情'); return; }
+            const e = emoji.textContent || emoji;
+            const note = document.getElementById('mood-note').value.trim();
+            let moods = getLifeData(LIFE_KEYS.moods, []);
+            const idx = moods.findIndex(m => m.date === getTodayString());
+            if (idx >= 0) moods[idx] = { date: getTodayString(), emoji: e, note };
+            else moods.push({ date: getTodayString(), emoji: e, note });
+            setLifeData(LIFE_KEYS.moods, moods);
+            loadMood();
+            checkAchievements();
+            showToast('心情已记录 💜');
+        }
+
+        // --- Heatmap ---
+        function loadHeatmap() {
+            const el = document.getElementById('life-module-heatmap');
+            if (!el) return;
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDay = new Date(year, month, 1).getDay();
+            let html = '<div class="heatmap-weekday" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div><div class="heatmap-grid">';
+            for (let i = 0; i < firstDay; i++) html += '<div></div>';
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                let count = 0;
+                APP_DATA.habits.forEach(h => { if (h.checkins && h.checkins.includes(dateStr)) count++; });
+                APP_DATA.todos.forEach(t => { if (t.done && t.doneDate === dateStr) count++; });
+                const level = count === 0 ? 'l0' : count <= 2 ? 'l1' : count <= 4 ? 'l2' : count <= 6 ? 'l3' : 'l4';
+                html += `<div class="heatmap-cell ${level}" onclick="showHeatmapDetail('${dateStr}', this)" data-date="${dateStr}">${d}</div>`;
+            }
+            html += '</div><div class="heatmap-legend"><span>少</span><span class="block l1"></span><span class="block l2"></span><span class="block l3"></span><span class="block l4"></span><span>多</span></div>';
+            el.innerHTML = html;
+        }
+
+        function showHeatmapDetail(dateStr, el) {
+            const habits = APP_DATA.habits.filter(h => h.checkins && h.checkins.includes(dateStr)).map(h => h.name);
+            const todos = APP_DATA.todos.filter(t => t.done && t.doneDate === dateStr).map(t => t.title);
+            let msg = dateStr + '\n';
+            if (habits.length > 0) msg += '📌 习惯: ' + habits.join(', ') + '\n';
+            if (todos.length > 0) msg += '✅ 待办: ' + todos.join(', ') + '\n';
+            if (habits.length === 0 && todos.length === 0) msg += '暂无记录';
+            showToast(msg.length > 50 ? msg.slice(0, 50) + '…' : msg);
+        }
+
+        // --- Accounting ---
+        let _acctSelectedCat = '餐饮';
+
+        function loadAccounting() {
+            const el = document.getElementById('life-module-accounting');
+            if (!el) return;
+            const data = getLifeData(LIFE_KEYS.accounting, []);
+            const cats = getLifeData(LIFE_KEYS.acctCats, ['餐饮', '交通', '日常消费']);
+            const today = getTodayString();
+            const todayTotal = data.filter(d => d.date === today).reduce((s, d) => s + d.amount, 0);
+            const weekStart = new Date(); weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+            const weekTotal = data.filter(d => d.date >= formatDate(weekStart)).reduce((s, d) => s + d.amount, 0);
+            let html = `
+                <div class="acct-summary">
+                    <div class="acct-summary-item"><div class="acct-summary-num">¥${todayTotal.toFixed(0)}</div><div class="acct-summary-label">今日</div></div>
+                    <div class="acct-summary-item"><div class="acct-summary-num">¥${weekTotal.toFixed(0)}</div><div class="acct-summary-label">本周</div></div>
+                </div>
+                <div class="acct-cat-manage">
+                    ${cats.map(c => `<span class="acct-cat-tag ${_acctSelectedCat === c ? 'active' : ''}" onclick="selectAcctCategory('${c}')">${c}</span>`).join('')}
+                    <span class="acct-cat-tag" onclick="addAcctCategory()" style="border-style:dashed;">+</span>
+                </div>
+                <div class="acct-row">
+                    <input type="number" class="input-field" id="acct-amount" placeholder="金额" step="0.01" min="0" style="width:90px;">
+                    <input type="text" class="input-field" id="acct-note" placeholder="备注(可选)">
+                    <button class="acct-add-btn" onclick="addAccounting()">记一笔</button>
+                </div>
+                <div id="acct-today-list">${data.filter(d => d.date === today).slice(-5).reverse().map(d => `<div class="acct-entry"><span>${d.category} ${d.note || ''}</span><span class="amount">-¥${d.amount.toFixed(0)}</span><button class="del-btn" onclick="deleteAccounting('${d.id}')">✕</button></div>`).join('')}</div>
+            `;
+            el.innerHTML = html;
+        }
+
+        function selectAcctCategory(cat) {
+            _acctSelectedCat = cat;
+            loadAccounting();
+        }
+
+        function addAcctCategory() {
+            const name = prompt('输入新分类名称：');
+            if (!name || !name.trim()) return;
+            const cats = getLifeData(LIFE_KEYS.acctCats, ['餐饮', '交通', '日常消费']);
+            if (cats.includes(name.trim())) { showToast('分类已存在'); return; }
+            cats.push(name.trim());
+            setLifeData(LIFE_KEYS.acctCats, cats);
+            _acctSelectedCat = name.trim();
+            loadAccounting();
+        }
+
+        function addAccounting() {
+            const amount = parseFloat(document.getElementById('acct-amount').value);
+            if (!amount || amount <= 0) { showToast('请输入有效金额'); return; }
+            const data = getLifeData(LIFE_KEYS.accounting, []);
+            data.push({ id: generateId(), date: getTodayString(), amount, category: _acctSelectedCat, note: document.getElementById('acct-note').value.trim() });
+            setLifeData(LIFE_KEYS.accounting, data);
+            document.getElementById('acct-amount').value = '';
+            document.getElementById('acct-note').value = '';
+            loadAccounting();
+            checkAchievements();
+            showToast('✅ 已记录');
+        }
+
+        function deleteAccounting(id) {
+            let data = getLifeData(LIFE_KEYS.accounting, []);
+            data = data.filter(d => d.id !== id);
+            setLifeData(LIFE_KEYS.accounting, data);
+            loadAccounting();
+        }
+
+        function scheduleNightReminder() {
+            // Check if we already asked tonight
+            const asked = getLifeData('zican_night_asked', '');
+            if (asked === getTodayString()) return;
+            const now = new Date();
+            // If it's after 9pm, ask now; otherwise schedule
+            if (now.getHours() >= 21) {
+                setTimeout(showNightReminder, 5000);
+            } else {
+                const msUntil9 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 21, 0, 0) - now;
+                if (msUntil9 > 0) setTimeout(showNightReminder, msUntil9);
+            }
+        }
+
+        function showNightReminder() {
+            const asked = getLifeData('zican_night_asked', '');
+            if (asked === getTodayString()) return;
+            const overlay = document.createElement('div');
+            overlay.className = 'night-reminder-overlay active';
+            overlay.id = 'night-overlay';
+            overlay.onclick = hideNightReminder;
+            const modal = document.createElement('div');
+            modal.className = 'night-reminder-modal active';
+            modal.id = 'night-modal';
+            modal.innerHTML = `<div class="modal-title">🌙 晚间提醒</div><p style="text-align:center;font-size:15px;margin-bottom:16px;">今天记账了吗？来记录今天的开支吧~</p><button style="width:100%;padding:12px;background:var(--primary);color:white;border:none;border-radius:var(--radius);font-size:16px;font-weight:600;cursor:pointer;" onclick="hideNightReminder();switchPage('life')">去记账</button><button style="width:100%;padding:8px;margin-top:8px;background:none;border:none;color:var(--text-secondary);font-size:14px;cursor:pointer;" onclick="hideNightReminder()">今天不记了</button>`;
+            document.body.appendChild(overlay);
+            document.body.appendChild(modal);
+            setLifeData('zican_night_asked', getTodayString());
+        }
+
+        function hideNightReminder() {
+            const o = document.getElementById('night-overlay');
+            const m = document.getElementById('night-modal');
+            if (o) { o.classList.remove('active'); setTimeout(() => o.remove(), 300); }
+            if (m) { m.classList.remove('active'); setTimeout(() => m.remove(), 300); }
+        }
+
+        // --- Life Settings (module sort) ---
+        function showLifeSettingsModal() {
+            // Simple reorder modal
+            const order = getLifeData(LIFE_KEYS.cardOrder, LIFE_MODULES.map(m => m.id));
+            const html = LIFE_MODULES.map(m => `<div class="settings-card-item" style="cursor:grab;"><span>⋮⋮</span> ${m.title}</div>`).join('');
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay active';
+            modal.id = 'life-settings-modal';
+            modal.innerHTML = `<div class="modal-sheet"><div class="modal-header"><button class="modal-cancel" onclick="hideLifeSettingsModal()">完成</button><div class="modal-title">模块排序</div><div style="width:44px;"></div></div><div style="padding:16px 20px;" id="life-sort-list">${html}</div></div>`;
+            document.body.appendChild(modal);
+            new Sortable(document.getElementById('life-sort-list'), {
+                animation: 200,
+                onEnd: function(evt) {
+                    const items = evt.from.querySelectorAll('.settings-card-item');
+                    const newOrder = Array.from(items).map((item, i) => LIFE_MODULES[i].id);
+                    // Actually map based on displayed text
+                    const textOrder = Array.from(items).map(el => el.textContent.trim());
+                    const newOrder2 = textOrder.map(t => { const m = LIFE_MODULES.find(m => m.title === t); return m ? m.id : ''; }).filter(Boolean);
+                    setLifeData(LIFE_KEYS.cardOrder, newOrder2);
+                }
+            });
+        }
+
+        function hideLifeSettingsModal() {
+            const m = document.getElementById('life-settings-modal');
+            if (m) { m.classList.remove('active'); setTimeout(() => m.remove(), 300); }
+            loadLifePage();
+        }
+
+        function initLifeSortable() {
+            const container = document.getElementById('life-cards-container');
+            if (!container) return;
+            // Re-order on reload based on saved order
+            const order = getLifeData(LIFE_KEYS.cardOrder, LIFE_MODULES.map(m => m.id));
+            const cards = container.querySelectorAll('.life-card');
+            cards.forEach(c => {
+                const id = c.getAttribute('data-life-card');
+                const idx = order.indexOf(id);
+                c.style.order = idx >= 0 ? idx : 999;
+            });
+        }
+
         // ==================== Initialize ====================
         async function init() {
             requestNotificationPermission();
@@ -2928,7 +3960,9 @@
             setTimeout(initSortable, 100);
             loadQuickLinks();
             startReminderChecker();
+            startLifeReminders();
             loadWeeklyStats();
+            checkAchievements();
 
             // Non-blocking cloud sync
             if (cloudSyncEnabled) {
@@ -2951,8 +3985,7 @@
                         localStorage.setItem('zican_app_data', JSON.stringify(APP_DATA));
                         saveData();
                         loadTodayPage();
-                        loadHabitsPage();
-                        loadTodosPage();
+                        loadHabitsTodosPage();
                         loadWeeklyStats();
                     }
                 }).catch(e => console.error('[CLOUD] Pull failed:', e));
@@ -2962,7 +3995,7 @@
 
             const params = new URLSearchParams(window.location.search);
             const tab = params.get('tab');
-            const validTabs = ['today', 'habits', 'todos', 'info', 'work'];
+            const validTabs = ['today', 'habits-todos', 'life', 'info', 'work'];
             if (tab && validTabs.includes(tab)) {
                 switchPage(tab);
             } else {
