@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#F2F2F7" id="theme-color-meta">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <meta name="msapplication-TileColor" content="#007AFF">
-    <title>子灿 v2.1.0</title>
+    <title>子灿 v2.2.0</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -1777,6 +1777,118 @@
             opacity: 1;
             pointer-events: auto;
         }
+        /* ==================== Portrait Gallery ==================== */
+        .gallery-scroll {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 8px 0 12px;
+        }
+        .gallery-scroll::-webkit-scrollbar { display: none; }
+        .gallery-card {
+            flex-shrink: 0;
+            width: 110px;
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 12px 8px;
+            text-align: center;
+            border: 1px solid var(--separator);
+        }
+        .gallery-card .stage-emoji {
+            font-size: 36px;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .gallery-card .stage-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .gallery-card .stage-date {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+        .gallery-card .stage-energy {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+        .gallery-btn {
+            background: none;
+            border: 1px solid var(--separator);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 13px;
+            color: var(--text);
+            cursor: pointer;
+            margin-top: 6px;
+            transition: all 0.2s;
+        }
+        .gallery-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .gallery-empty {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        /* ==================== Festival Events ==================== */
+        .festival-banner {
+            background: linear-gradient(135deg, #FF6B6B, #FFD93D);
+            color: white;
+            border-radius: var(--radius);
+            padding: 10px 16px;
+            margin: 8px 0;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            animation: fadeIn 0.5s ease;
+        }
+        .festival-zongzi {
+            display: inline-block;
+            font-size: 32px;
+            cursor: pointer;
+            animation: zongziDangle 1s ease-in-out infinite alternate;
+            user-select: none;
+            margin: 4px 8px;
+        }
+        @keyframes zongziDangle {
+            0% { transform: rotate(-8deg); }
+            100% { transform: rotate(8deg); }
+        }
+        .festival-rabbit {
+            display: inline-block;
+            font-size: 28px;
+            cursor: pointer;
+            animation: rabbitHop 0.8s ease-in-out infinite alternate;
+            user-select: none;
+            margin: 4px 8px;
+        }
+        @keyframes rabbitHop {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-6px); }
+        }
+        .mooncake-count {
+            font-size: 12px;
+            color: var(--text-secondary);
+            background: var(--bg);
+            border-radius: 10px;
+            padding: 2px 8px;
+            display: inline-block;
+        }
+        .festival-energy-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #FF6B6B, #FF9500);
+            color: white;
+            border-radius: 12px;
+            padding: 2px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 6px;
+        }
     </style>
 </head>
 <body>
@@ -2211,6 +2323,21 @@
                     <button class="calendar-nav" onclick="navigateMonth(1)">›</button>
                 </div>
                 <div class="calendar-grid" id="calendar-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Portrait Gallery Modal -->
+    <div class="modal-overlay" id="tree-gallery-modal">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <button class="modal-cancel" onclick="hideTreeGallery()">关闭</button>
+                <div class="modal-title">🌳 树的肖像画廊</div>
+                <div style="width:44px;"></div>
+            </div>
+            <div style="padding:4px 20px 20px;">
+                <div style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">每次进化自动保存肖像，回顾成长历程</div>
+                <div id="tree-gallery-content"></div>
             </div>
         </div>
     </div>
@@ -3621,8 +3748,8 @@
         function getTreeData() {
             try {
                 const v = localStorage.getItem('zican_tree');
-                return v ? JSON.parse(v) : { name: '我的树', energy: Math.floor(Math.random() * 41) + 10, birthday: getTodayString(), worms: 0, insects: 0, birds: 0, fruits: 0, lastHarvest: '', birdTypes: [], treehole: [], lastEvent: '', pestKilled: 0, lastEventDate: '' };
-            } catch(e) { return { name: '我的树', energy: Math.floor(Math.random() * 41) + 10, birthday: getTodayString(), worms: 0, insects: 0, birds: 0, fruits: 0, lastHarvest: '', birdTypes: [], treehole: [], lastEvent: '', pestKilled: 0, lastEventDate: '' }; }
+                return v ? JSON.parse(v) : { name: '我的树', energy: Math.floor(Math.random() * 41) + 10, birthday: getTodayString(), worms: 0, insects: 0, birds: 0, fruits: 0, lastHarvest: '', birdTypes: [], treehole: [], lastEvent: '', pestKilled: 0, lastEventDate: '', portraits: [], mooncake: 0 };
+            } catch(e) { return { name: '我的树', energy: Math.floor(Math.random() * 41) + 10, birthday: getTodayString(), worms: 0, insects: 0, birds: 0, fruits: 0, lastHarvest: '', birdTypes: [], treehole: [], lastEvent: '', pestKilled: 0, lastEventDate: '', portraits: [], mooncake: 0 }; }
         }
 
         function saveTreeData(d) { localStorage.setItem('zican_tree', JSON.stringify(d)); }
@@ -3648,6 +3775,18 @@
             const ecoIndex = Math.min(100, Math.floor((data.worms / 8 * 30) + (data.insects / 6 * 35) + (data.birds / 4 * 35)));
             // Set season class
             applySeasonClass();
+            // Festival detection
+            const festival = getTodayFestival();
+            let festivalBanner = '', festivalZongzi = '', festivalRabbit = '';
+            if (festival) {
+                festivalBanner = `🎉 ${festival.name}：${festival.desc}`;
+                if (festival.effect === 'dragon_boat') {
+                    festivalZongzi = `<span class="festival-zongzi" id="festival-zongzi" onclick="clickZongzi()">🍙</span> <span style="font-size:13px;color:var(--text-secondary);">点击粽子领取果实</span>`;
+                }
+                if (festival.effect === 'mid_autumn') {
+                    festivalRabbit = `<span class="festival-rabbit" id="festival-rabbit" onclick="clickRabbit()">🐰🥮</span> <span style="font-size:13px;color:var(--text-secondary);">兔子送月饼来了！</span>`;
+                }
+            }
             el.innerHTML = `
                 <div class="tree-section">
                     <div class="pest-area" id="pest-area"></div>
@@ -3657,7 +3796,9 @@
                     <div class="tree-energy-text">生命力 ${data.energy}</div>
                     <div class="tree-energy-bar"><div class="tree-energy-fill" id="tree-energy-fill" style="width:${Math.min(100, (data.energy % 5000) / 50)}%;"></div></div>
                     <div class="tree-message" id="tree-message">${stage.msg}</div>
-                    <div class="tree-days">🌱 养树第 ${days} 天</div>
+                    <div class="tree-days">🌱 养树第 ${days} 天
+                        <button class="gallery-btn" onclick="showTreeGallery()" style="margin-left:8px;padding:3px 10px;">🖼️ 画廊</button>
+                    </div>
                     <div class="eco-divider"></div>
                     <div class="eco-row">
                         <div class="eco-item"><span class="icon">🪱</span><span class="count">${data.worms}</span><span class="label">蚯蚓</span></div>
@@ -3669,6 +3810,10 @@
                     </div>
                     ${data.energy >= 2000 ? `<div style="text-align:center;margin:4px 0;"><button class="morning-btn" style="padding:6px 16px;font-size:13px;width:auto;display:inline-block;" onclick="harvestFruits()">🍎 收获果实 (${data.fruits})</button></div>` : ''}
                     ${data.birds > 0 ? `<div class="eco-divider"></div><div style="font-size:13px;color:var(--text-secondary);text-align:center;">${getBirdSong(data)}</div>` : ''}
+                    ${festivalBanner ? `<div class="festival-banner">${festivalBanner}</div>` : ''}
+                    ${festivalZongzi ? `<div style="text-align:center;">${festivalZongzi}</div>` : ''}
+                    ${festivalRabbit ? `<div style="text-align:center;">${festivalRabbit}</div>` : ''}
+                    ${(data.mooncake || 0) > 0 ? `<div style="text-align:center;margin-top:4px;"><span class="mooncake-count">🥮 月饼 ×${data.mooncake}（下次待办双倍能量）</span></div>` : ''}
                 </div>
             `;
             // Check random event
@@ -3684,6 +3829,22 @@
 
         function addTreeEnergy(amount) {
             let data = getTreeData();
+            // Check Spring Equinox bonus: +50%
+            const festival = getTodayFestival();
+            if (festival && festival.effect === 'spring_equinox') {
+                amount = Math.round(amount * 1.5);
+            }
+            // Check mooncake double
+            if ((data.mooncake || 0) > 0) {
+                data.mooncake--;
+                amount *= 2;
+                saveTreeData(data);
+                showToast('🥮 月饼生效：能量翻倍！');
+            }
+            // Spring Equinox notification
+            if (festival && festival.effect === 'spring_equinox' && amount > 0) {
+                showToast(`🌸 春分加成：能量 +50%！`);
+            }
             // Eco efficiency bonus
             const bonus = data.worms * 2; // +2% per worm
             const totalAdd = Math.round(amount * (1 + bonus / 100));
@@ -3711,6 +3872,28 @@
             const newStage = getTreeStage(data.energy).name;
             if (newStage !== oldStage) {
                 showToast(`🎉 进阶！${oldStage} → ${newStage}`);
+                // Save portrait
+                const stageInfo = getTreeStage(data.energy);
+                if (!data.portraits) data.portraits = [];
+                const exists = data.portraits.some(p => p.stageName === newStage);
+                if (!exists) {
+                    const comboIcons = {
+                        '种子萌发': '🌰+🌱',
+                        '幼苗出土': '🌱+💧',
+                        '营养生长': '🌿+☀️',
+                        '幼树期': '🌲+🌤️',
+                        '成熟大树': '🌳+🍎',
+                        '参天古树': '🏆+🌳+✨'
+                    };
+                    data.portraits.push({
+                        stageName: newStage,
+                        icon: stageInfo.icon,
+                        emojiCombo: comboIcons[newStage] || stageInfo.icon,
+                        date: getTodayString(),
+                        energy: data.energy
+                    });
+                    saveTreeData(data);
+                }
             }
             initTree();
         }
@@ -3853,6 +4036,124 @@
             const all = Object.keys(BIRD_SONGS);
             if (types.length >= 5) return '🎵 森林音乐会！所有鸟儿一起歌唱 🎶';
             return `鸟鸣收集：${types.length}/${all.length} ${types.map(t => '🐦').join('')}`;
+        }
+
+        // ==================== Festival Events ====================
+        // Solar terms (approximate, within ±1 day)
+        const SOLAR_TERMS = {
+            '03-20': { name: '春分', desc: '昼夜平分，万物复苏', effect: 'spring_equinox' },
+            '06-21': { name: '夏至', desc: '日照最长，阳气最盛', effect: 'none' },
+            '09-23': { name: '秋分', desc: '丰收季节，天高气爽', effect: 'none' },
+            '12-22': { name: '冬至', desc: '阳气始生，春之先声', effect: 'none' }
+        };
+
+        // Lunar festival dates (Gregorian) for 2025-2030
+        const LUNAR_FESTIVAL_MAP = {
+            '2025': {
+                '01-29': { name: '春节', desc: '新年快乐！万象更新', effect: 'none' },
+                '05-31': { name: '端午节', desc: '粽叶飘香，龙舟竞渡', effect: 'dragon_boat' },
+                '10-06': { name: '中秋节', desc: '月圆人团圆', effect: 'mid_autumn' }
+            },
+            '2026': {
+                '02-17': { name: '春节', desc: '新年快乐！', effect: 'none' },
+                '06-19': { name: '端午节', desc: '粽叶飘香', effect: 'dragon_boat' },
+                '09-25': { name: '中秋节', desc: '月圆人团圆', effect: 'mid_autumn' }
+            },
+            '2027': {
+                '02-06': { name: '春节', desc: '新年快乐！', effect: 'none' },
+                '06-09': { name: '端午节', desc: '粽叶飘香', effect: 'dragon_boat' },
+                '09-15': { name: '中秋节', desc: '月圆人团圆', effect: 'mid_autumn' }
+            },
+            '2028': {
+                '01-26': { name: '春节', desc: '新年快乐！', effect: 'none' },
+                '05-28': { name: '端午节', desc: '粽叶飘香', effect: 'dragon_boat' },
+                '10-03': { name: '中秋节', desc: '月圆人团圆', effect: 'mid_autumn' }
+            },
+            '2029': {
+                '02-13': { name: '春节', desc: '新年快乐！', effect: 'none' },
+                '06-16': { name: '端午节', desc: '粽叶飘香', effect: 'dragon_boat' },
+                '09-21': { name: '中秋节', desc: '月圆人团圆', effect: 'mid_autumn' }
+            },
+            '2030': {
+                '02-03': { name: '春节', desc: '新年快乐！', effect: 'none' },
+                '06-05': { name: '端午节', desc: '粽叶飘香', effect: 'dragon_boat' },
+                '09-11': { name: '中秋节', desc: '月圆人团圆', effect: 'mid_autumn' }
+            }
+        };
+
+        function getTodayFestival() {
+            const today = new Date();
+            const mmdd = `${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+            const year = String(today.getFullYear());
+            // Check solar terms with ±1 day range for spring equinox
+            const solarKeys = Object.keys(SOLAR_TERMS);
+            for (const key of solarKeys) {
+                if (mmdd === key) {
+                    return { type: 'solar', ...SOLAR_TERMS[key] };
+                }
+                // ±1 day range for spring equinox (key events)
+                if (SOLAR_TERMS[key].effect !== 'none') {
+                    const parts = key.split('-').map(Number);
+                    const target = new Date(today.getFullYear(), parts[0] - 1, parts[1]);
+                    const diff = Math.abs((today - target) / (86400000));
+                    if (diff <= 1) {
+                        return { type: 'solar', ...SOLAR_TERMS[key] };
+                    }
+                }
+            }
+            // Check lunar festivals
+            if (LUNAR_FESTIVAL_MAP[year] && LUNAR_FESTIVAL_MAP[year][mmdd]) {
+                return { type: 'lunar', ...LUNAR_FESTIVAL_MAP[year][mmdd] };
+            }
+            return null;
+        }
+
+        // --- Portrait Gallery ---
+        function showTreeGallery() {
+            const data = getTreeData();
+            const container = document.getElementById('tree-gallery-content');
+            if (!container) return;
+            const portraits = data.portraits || [];
+            if (portraits.length === 0) {
+                container.innerHTML = '<div class="gallery-empty">🌱 树还没有进化过，继续努力吧！</div>';
+            } else {
+                container.innerHTML = `<div class="gallery-scroll">${portraits.map(p => `
+                    <div class="gallery-card">
+                        <span class="stage-emoji">${p.emojiCombo || p.icon}</span>
+                        <div class="stage-name">${p.stageName}</div>
+                        <div class="stage-date">${p.date}</div>
+                        <div class="stage-energy">⚡${p.energy}</div>
+                    </div>
+                `).join('')}</div>`;
+            }
+            document.getElementById('tree-gallery-modal').classList.add('active');
+        }
+
+        function hideTreeGallery() {
+            document.getElementById('tree-gallery-modal').classList.remove('active');
+        }
+
+        // --- Dragon Boat Zongzi Click ---
+        function clickZongzi() {
+            const data = getTreeData();
+            data.fruits = (data.fruits || 0) + 1;
+            saveTreeData(data);
+            showToast('🍙 剥开粽子，获得 1 个能量果实！');
+            addTreeEnergy(5);
+            // Remove zongzi
+            const z = document.getElementById('festival-zongzi');
+            if (z) z.remove();
+        }
+
+        // --- Mid-Autumn Rabbit Click ---
+        function clickRabbit() {
+            const data = getTreeData();
+            data.mooncake = (data.mooncake || 0) + 1;
+            saveTreeData(data);
+            showToast('🐰 兔子送了你一个月饼！🥮 下次任务双倍能量！');
+            // Remove rabbit
+            const r = document.getElementById('festival-rabbit');
+            if (r) r.remove();
         }
 
         // --- Morning ---
