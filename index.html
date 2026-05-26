@@ -4553,7 +4553,7 @@
         function showLifeSettingsModal() {
             // Simple reorder modal
             const order = getLifeData(LIFE_KEYS.cardOrder, LIFE_MODULES.map(m => m.id));
-            const html = LIFE_MODULES.map(m => `<div class="settings-card-item" style="cursor:grab;"><span>⋮⋮</span> ${m.title}</div>`).join('');
+            const html = LIFE_MODULES.map(m => `<div class="settings-card-item" style="cursor:grab;" data-module-id="${m.id}"><span>⋮⋮</span> ${m.title}</div>`).join('');
             const modal = document.createElement('div');
             modal.className = 'modal-overlay active';
             modal.id = 'life-settings-modal';
@@ -4563,11 +4563,8 @@
                 animation: 200,
                 onEnd: function(evt) {
                     const items = evt.from.querySelectorAll('.settings-card-item');
-                    const newOrder = Array.from(items).map((item, i) => LIFE_MODULES[i].id);
-                    // Actually map based on displayed text
-                    const textOrder = Array.from(items).map(el => el.textContent.trim());
-                    const newOrder2 = textOrder.map(t => { const m = LIFE_MODULES.find(m => m.title === t); return m ? m.id : ''; }).filter(Boolean);
-                    setLifeData(LIFE_KEYS.cardOrder, newOrder2);
+                    const newOrder = Array.from(items).map(el => el.getAttribute('data-module-id')).filter(Boolean);
+                    setLifeData(LIFE_KEYS.cardOrder, newOrder);
                 }
             });
         }
