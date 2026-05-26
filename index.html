@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#F2F2F7" id="theme-color-meta">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <meta name="msapplication-TileColor" content="#007AFF">
-    <title>子灿 v2.0.0</title>
+    <title>子灿 v2.1.0</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -1143,66 +1143,166 @@
             font-weight: 600;
             margin-bottom: 12px;
         }
-        /* Partner / Companion */
-        .partner-row {
-            display: flex;
-            align-items: center;
-            gap: 16px;
+        /* === Tree System === */
+        .tree-section {
+            text-align: center;
+            padding: 12px 0 4px;
+            position: relative;
+            min-height: 200px;
         }
-        .partner-avatar {
-            font-size: 56px;
-            width: 64px;
-            height: 64px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #FFD700, #FFA500);
-            border-radius: 50%;
-            flex-shrink: 0;
+        .tree-emoji {
+            font-size: 72px;
+            display: inline-block;
+            transition: transform 0.2s ease;
+            cursor: pointer;
+            user-select: none;
+            line-height: 1.2;
         }
-        .partner-info {
-            flex: 1;
+        .tree-emoji.bounce {
+            animation: treeBounce 0.3s ease;
         }
-        .partner-name {
-            font-size: 17px;
-            font-weight: 600;
+        @keyframes treeBounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.25); }
+            100% { transform: scale(1); }
         }
-        .partner-name-input {
-            font-size: 17px;
-            font-weight: 600;
-            border: none;
-            background: transparent;
+        .tree-stage-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-top: 4px;
             color: var(--text);
-            border-bottom: 1px solid var(--separator);
-            width: 120px;
-            outline: none;
         }
-        .partner-energy-text {
-            font-size: 13px;
+        .tree-energy-text {
+            font-size: 14px;
             color: var(--text-secondary);
             margin-top: 2px;
         }
-        .energy-bar-bg {
-            height: 8px;
+        .tree-energy-bar {
+            max-width: 280px;
+            margin: 8px auto;
+            height: 10px;
             background: var(--separator);
-            border-radius: 4px;
-            margin-top: 4px;
+            border-radius: 5px;
             overflow: hidden;
         }
-        .energy-bar-fill {
+        .tree-energy-fill {
             height: 100%;
-            border-radius: 4px;
-            background: linear-gradient(90deg, #FF6B6B, #FFD93D, #6BCB77);
+            border-radius: 5px;
+            background: linear-gradient(90deg, #8BC34A, #4CAF50, #2E7D32);
             transition: width 0.5s ease;
         }
-        .partner-message {
-            background: var(--bg);
-            border-radius: 12px;
-            padding: 10px 14px;
-            margin-top: 10px;
+        .tree-message {
             font-size: 14px;
             color: var(--text-secondary);
+            font-style: italic;
+            margin: 6px 0 10px;
             min-height: 20px;
+            padding: 0 12px;
+        }
+        .tree-days {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        .tree-name-input {
+            font-size: 20px;
+            font-weight: 700;
+            border: none;
+            background: transparent;
+            color: var(--text);
+            text-align: center;
+            border-bottom: 1px solid var(--separator);
+            width: 140px;
+            outline: none;
+            margin-top: 4px;
+        }
+        /* Eco Circle */
+        .eco-row {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 8px 0;
+        }
+        .eco-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            font-size: 13px;
+        }
+        .eco-item .icon { font-size: 24px; }
+        .eco-item .count { font-size: 14px; font-weight: 600; color: var(--text); }
+        .eco-item .label { font-size: 11px; color: var(--text-secondary); }
+        .eco-divider {
+            height: 1px;
+            background: var(--separator);
+            margin: 8px 0;
+        }
+        /* Tree hole */
+        .treehole-area { margin-top: 8px; }
+        .treehole-input-wrap {
+            display: flex;
+            gap: 8px;
+        }
+        .treehole-input-wrap input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--separator);
+            border-radius: 8px;
+            font-size: 14px;
+            background: var(--bg);
+            color: var(--text);
+            outline: none;
+        }
+        .treehole-input-wrap button {
+            padding: 8px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .treehole-reply {
+            margin-top: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-style: italic;
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 8px 12px;
+            min-height: 32px;
+        }
+        .treehole-history {
+            max-height: 100px;
+            overflow-y: auto;
+            margin-top: 6px;
+        }
+        .treehole-history-item {
+            font-size: 12px;
+            padding: 4px 0;
+            border-bottom: 1px solid var(--separator);
+            display: flex;
+            justify-content: space-between;
+        }
+        /* Pest game */
+        .pest-area {
+            position: relative;
+            height: 0;
+            overflow: visible;
+        }
+        .pest {
+            position: absolute;
+            font-size: 20px;
+            cursor: pointer;
+            animation: pestMove 2s ease-in-out infinite alternate;
+            z-index: 5;
+            user-select: none;
+        }
+        @keyframes pestMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(20px, -10px); }
         }
         /* Morning Button */
         .morning-btn {
@@ -1636,6 +1736,11 @@
         .life-card-handle:active {
             cursor: grabbing;
         }
+        /* Seasons */
+        body.season-spring .tree-section { background: linear-gradient(180deg, rgba(200,230,200,0.15) 0%, transparent 60%); border-radius: 24px; }
+        body.season-summer .tree-section { background: linear-gradient(180deg, rgba(200,240,220,0.15) 0%, transparent 60%); border-radius: 24px; }
+        body.season-autumn .tree-section { background: linear-gradient(180deg, rgba(240,220,180,0.15) 0%, transparent 60%); border-radius: 24px; }
+        body.season-winter .tree-section { background: linear-gradient(180deg, rgba(220,230,240,0.15) 0%, transparent 60%); border-radius: 24px; }
         /* Night reminder modal */
         .night-reminder-modal {
             position: fixed;
@@ -2622,7 +2727,7 @@
                 logActivity('habit_checkin', { habitId, habitName: habit.name, date: today });
                 showToast('✅ 打卡成功');
                 if (navigator.vibrate) navigator.vibrate(10);
-                addPartnerEnergy(3);
+                addTreeEnergy(5);
                 checkAchievements();
             } else {
                 habit.checkins.splice(idx, 1);
@@ -2690,7 +2795,7 @@
                 logActivity('todo_complete', { todoId, title: todo.title, doneDate: getTodayString() });
                 showToast('✅ 已完成');
                 if (navigator.vibrate) navigator.vibrate(10);
-                addPartnerEnergy(3);
+                addTreeEnergy(10);
                 checkAchievements();
             }
             saveData();
@@ -3435,7 +3540,8 @@
 
         // Life card modules definition
         const LIFE_MODULES = [
-            { id: 'partner', title: '🌟 虚拟伙伴' },
+            { id: 'partner', title: '🌳 生态树' },
+            { id: 'treehole', title: '🎭 树洞' },
             { id: 'morning', title: '🌅 早安' },
             { id: 'badges', title: '🏆 成就徽章' },
             { id: 'wheel', title: '🎡 幸运转盘' },
@@ -3457,7 +3563,9 @@
             });
             container.innerHTML = html;
             // Load each module
-            initPartner();
+            initTree();
+            initTreeHole();
+            setTimeout(spawnPest, 3000);
             loadMorning();
             loadBadges();
             loadWheel();
@@ -3472,50 +3580,279 @@
             scheduleNightReminder();
         }
 
-        // --- Partner ---
-        function initPartner() {
-            let data = getLifeData(LIFE_KEYS.partner, { name: '小灿', energy: 50, messages: [], lastDecay: getTodayString() });
-            // Daily decay
-            if (data.lastDecay !== getTodayString()) {
-                data.energy = Math.max(0, data.energy - 5);
-                data.lastDecay = getTodayString();
-                setLifeData(LIFE_KEYS.partner, data);
-            }
-            const el = document.getElementById('life-module-partner');
-            if (!el) return;
-            el.innerHTML = `
-                <div class="partner-row">
-                    <div class="partner-avatar">🐱</div>
-                    <div class="partner-info">
-                        <div><input class="partner-name-input" id="partner-name-input" value="${data.name}" onchange="editPartnerName()" maxlength="6"></div>
-                        <div class="partner-energy-text">能量: ${data.energy}/100</div>
-                        <div class="energy-bar-bg"><div class="energy-bar-fill" style="width:${data.energy}%;"></div></div>
-                    </div>
-                </div>
-                <div class="partner-message" id="partner-message">${data.messages.length > 0 ? data.messages[data.messages.length - 1] : '你好呀！记得完成待办和打卡哦~'}</div>
-            `;
+        // --- Energy Tree Core ---
+        const TREE_STAGES = [
+            { min: 0, max: 99, icon: '🌰', name: '种子萌发', msg: '我在努力突破种皮，快给我阳光（任务）和水分（习惯）' },
+            { min: 100, max: 299, icon: '🌱', name: '幼苗出土', msg: '见到光了！继续完成任务让我扎根更深~' },
+            { min: 300, max: 799, icon: '🌿', name: '营养生长', msg: '我的叶子变多了，能吸收更多阳光！你的每个行动都是我的养分' },
+            { min: 800, max: 1999, icon: '🌲', name: '幼树期', msg: '我长出了树皮，更坚强了！你的坚持让我不怕风雨' },
+            { min: 2000, max: 4999, icon: '🌳', name: '成熟大树', msg: '我已经能为你遮风挡雨啦！继续一起成长~' },
+            { min: 5000, max: Infinity, icon: '🏆🌳', name: '参天古树', msg: '我已成为森林之王，感谢你日复一日的陪伴！我们的故事还在继续...' }
+        ];
+
+        const TREE_HOLE_REPLIES = [
+            '一切都会好起来的 🌈', '你已经很棒了，继续加油 💪', '今天也是美好的一天 ☀️',
+            '休息一下，深呼吸 🌿', '你的努力树都看在眼里 🌳', '明天会更好 🌟',
+            '抱抱你 🤗', '记得照顾好自己 💚', '慢慢来，比较快 🐢',
+            '你并不孤单 🌏', '让烦恼随风飘走 🍃', '给自己一个微笑 😊',
+            '每一步都算数 👣', '活在当下，享受此刻 🧘', '你很珍贵 💎',
+            '放下执念，顺其自然 🍂', '雨后会天晴 🌈', '做自己就好 ✨',
+            '今天也要开开心心 🎈', '树会一直陪着你 🌲', '没有什么过不去 🏔️',
+            '你比想象中更强大 🦋', '静待花开 🌸', '一切都是最好的安排 🌟',
+            '保持热爱，奔赴山海 🌊', '慢慢来，会好的 🌱', '你值得被爱 ❤️',
+            '今天辛苦了 🫂', '放松一点，没关系的 🍵', '星光不负赶路人 ⭐',
+            '温柔地对待自己 🕊️', '深呼吸，笑一个 😄', '你的存在本身就是礼物 🎁',
+            '向前看，别回头 👀', '种一棵树最好的时间是现在 🌳', '生活明朗，万物可爱 🌻',
+            '你很好，真的 💖', '坚持下去，曙光在前 🌅', '简单点，开心点 🎵',
+            '今天也要元气满满 ⚡', '世界很大，幸福很小 🏠', '你是独一无二的存在 🌟',
+            '偶尔躺平也没关系 🛋️', '给生活比个耶 ✌️', '心之所向，素履以往 🎯',
+            '吃好喝好，没烦恼 🍜', '阳光万里，我们终将上岸 🚣', '愿你被世界温柔以待 🌍',
+            '没关系，我在这里 🫂', '每一天都是新的开始 🌅', '加油，你是最棒的！🎉'
+        ];
+
+        const BIRD_SONGS = {
+            '喜鹊': '叽叽喳喳~ 今天也有好消息！',
+            '画眉': '啾~啾啾~ 你的心情真好听！',
+            '黄鹂': '咕咕~咕~ 别忘记喝水哦！',
+            '百灵': '嘀哩哩~ 一起来唱歌吧！',
+            '夜莺': '咕~咕噜~ 晚安，好梦！'
+        };
+
+        function getTreeData() {
+            try {
+                const v = localStorage.getItem('zican_tree');
+                return v ? JSON.parse(v) : { name: '我的树', energy: Math.floor(Math.random() * 41) + 10, birthday: getTodayString(), worms: 0, insects: 0, birds: 0, fruits: 0, lastHarvest: '', birdTypes: [], treehole: [], lastEvent: '', pestKilled: 0, lastEventDate: '' };
+            } catch(e) { return { name: '我的树', energy: Math.floor(Math.random() * 41) + 10, birthday: getTodayString(), worms: 0, insects: 0, birds: 0, fruits: 0, lastHarvest: '', birdTypes: [], treehole: [], lastEvent: '', pestKilled: 0, lastEventDate: '' }; }
         }
 
-        function editPartnerName() {
-            const data = getLifeData(LIFE_KEYS.partner, { name: '小灿', energy: 50, messages: [], lastDecay: getTodayString() });
-            data.name = document.getElementById('partner-name-input').value.trim() || '小灿';
-            setLifeData(LIFE_KEYS.partner, data);
+        function saveTreeData(d) { localStorage.setItem('zican_tree', JSON.stringify(d)); }
+
+        function getTreeStage(energy) {
+            for (const s of TREE_STAGES) {
+                if (energy >= s.min && energy <= s.max) return s;
+            }
+            return TREE_STAGES[0];
+        }
+
+        function initTree() {
+            const data = getTreeData();
+            const el = document.getElementById('life-module-partner');
+            if (!el) return;
+            // Recalc eco based on energy
+            data.worms = Math.min(8, Math.floor(data.energy / 300));
+            data.insects = Math.min(6, data.energy >= 300 ? Math.floor((data.energy - 300) / 500) + 1 : 0);
+            data.birds = Math.min(4, data.energy >= 800 ? Math.floor((data.energy - 800) / 1200) + 1 : 0);
+            saveTreeData(data);
+            const stage = getTreeStage(data.energy);
+            const days = Math.floor((new Date() - new Date(data.birthday)) / (86400000)) + 1;
+            const ecoIndex = Math.min(100, Math.floor((data.worms / 8 * 30) + (data.insects / 6 * 35) + (data.birds / 4 * 35)));
+            // Set season class
+            applySeasonClass();
+            el.innerHTML = `
+                <div class="tree-section">
+                    <div class="pest-area" id="pest-area"></div>
+                    <div class="tree-emoji" id="tree-emoji">${stage.icon}</div>
+                    <div><input class="tree-name-input" id="tree-name-input" value="${data.name}" onchange="editTreeName()" maxlength="8"></div>
+                    <div class="tree-stage-name">${stage.name}</div>
+                    <div class="tree-energy-text">生命力 ${data.energy}</div>
+                    <div class="tree-energy-bar"><div class="tree-energy-fill" id="tree-energy-fill" style="width:${Math.min(100, (data.energy % 5000) / 50)}%;"></div></div>
+                    <div class="tree-message" id="tree-message">${stage.msg}</div>
+                    <div class="tree-days">🌱 养树第 ${days} 天</div>
+                    <div class="eco-divider"></div>
+                    <div class="eco-row">
+                        <div class="eco-item"><span class="icon">🪱</span><span class="count">${data.worms}</span><span class="label">蚯蚓</span></div>
+                        <div class="eco-item"><span class="icon">🦋</span><span class="count">${data.insects}</span><span class="label">昆虫</span></div>
+                        <div class="eco-item"><span class="icon">🐦</span><span class="count">${data.birds}</span><span class="label">鸟类</span></div>
+                        <div class="eco-item"><span class="icon">🌍</span><span class="count">${ecoIndex}</span><span class="label">生态指数</span></div>
+                        ${data.energy >= 2000 ? `<div class="eco-item"><span class="icon">🍎</span><span class="count">${data.fruits}</span><span class="label">果实</span></div>` : ''}
+                        ${data.energy >= 1500 ? `<div class="eco-item"><span class="icon">🐿️</span><span class="count">✨</span><span class="label">小动物</span></div>` : ''}
+                    </div>
+                    ${data.energy >= 2000 ? `<div style="text-align:center;margin:4px 0;"><button class="morning-btn" style="padding:6px 16px;font-size:13px;width:auto;display:inline-block;" onclick="harvestFruits()">🍎 收获果实 (${data.fruits})</button></div>` : ''}
+                    ${data.birds > 0 ? `<div class="eco-divider"></div><div style="font-size:13px;color:var(--text-secondary);text-align:center;">${getBirdSong(data)}</div>` : ''}
+                </div>
+            `;
+            // Check random event
+            checkRandomEvent();
+        }
+
+        function editTreeName() {
+            const data = getTreeData();
+            data.name = document.getElementById('tree-name-input').value.trim() || '我的树';
+            saveTreeData(data);
             showToast('名字已更新');
         }
 
-        function addPartnerEnergy(amount) {
-            let data = getLifeData(LIFE_KEYS.partner, { name: '小灿', energy: 50, messages: [], lastDecay: getTodayString() });
-            data.energy = Math.min(100, data.energy + amount);
-            const msgs = ['继续加油！🎉', '太棒啦！✨', '好厉害！继续保持~', '你真棒！🌟', '哇，做得不错！'];
-            data.messages.push(msgs[Math.floor(Math.random() * msgs.length)]);
-            if (data.messages.length > 20) data.messages = data.messages.slice(-20);
-            setLifeData(LIFE_KEYS.partner, data);
-            const msgEl = document.getElementById('partner-message');
-            if (msgEl) msgEl.textContent = data.messages[data.messages.length - 1];
-            const fill = document.querySelector('#life-module-partner .energy-bar-fill');
-            if (fill) fill.style.width = data.energy + '%';
-            const txt = document.querySelector('#life-module-partner .partner-energy-text');
-            if (txt) txt.textContent = `能量: ${data.energy}/100`;
+        function addTreeEnergy(amount) {
+            let data = getTreeData();
+            // Eco efficiency bonus
+            const bonus = data.worms * 2; // +2% per worm
+            const totalAdd = Math.round(amount * (1 + bonus / 100));
+            const oldStage = getTreeStage(data.energy).name;
+            data.energy += totalAdd;
+            // Recalc eco
+            data.worms = Math.min(8, Math.floor(data.energy / 300));
+            data.insects = Math.min(6, data.energy >= 300 ? Math.floor((data.energy - 300) / 500) + 1 : 0);
+            data.birds = Math.min(4, data.energy >= 800 ? Math.floor((data.energy - 800) / 1200) + 1 : 0);
+            // Bird type unlock
+            const birdNames = Object.keys(BIRD_SONGS);
+            if (data.birds > 0 && data.birds > (data.birdTypes || []).length) {
+                const newBird = birdNames[(data.birdTypes || []).length % birdNames.length];
+                if (!(data.birdTypes || []).includes(newBird)) {
+                    if (!data.birdTypes) data.birdTypes = [];
+                    data.birdTypes.push(newBird);
+                    showToast(`🐦 新鸟来访：${newBird}！`);
+                }
+            }
+            saveTreeData(data);
+            // Bounce animation
+            const emoji = document.getElementById('tree-emoji');
+            if (emoji) { emoji.classList.remove('bounce'); void emoji.offsetWidth; emoji.classList.add('bounce'); }
+            // Stage up check
+            const newStage = getTreeStage(data.energy).name;
+            if (newStage !== oldStage) {
+                showToast(`🎉 进阶！${oldStage} → ${newStage}`);
+            }
+            initTree();
+        }
+
+        function getBirdSong(data) {
+            const types = data.birdTypes || [];
+            if (types.length === 0) return '';
+            const rand = types[Math.floor(Math.random() * types.length)];
+            const song = BIRD_SONGS[rand] || '啾啾~';
+            return `🐦 ${rand}：${song}`;
+        }
+
+        // --- Harvest ---
+        function harvestFruits() {
+            const data = getTreeData();
+            const now = getTodayString();
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            if (data.lastHarvest && data.lastHarvest >= formatDate(weekAgo)) {
+                showToast('⏳ 本周已收获过，下周再来吧');
+                return;
+            }
+            const qty = Math.floor(data.energy / 500) + 2;
+            data.fruits = (data.fruits || 0) + qty;
+            data.lastHarvest = now;
+            saveTreeData(data);
+            showToast(`🍎 收获 ${qty} 个能量果实！`);
+            initTree();
+        }
+
+        // --- Use fruit (for double card) ---
+        function useFruit() {
+            const data = getTreeData();
+            if (!data.fruits || data.fruits < 1) { showToast('没有果实可用'); return; }
+            data.fruits--;
+            addTreeEnergy(50);
+            saveTreeData(data);
+            showToast('🍎 使用能量果实 +50 生命力！');
+        }
+
+        // --- Seasons ---
+        function applySeasonClass() {
+            const month = new Date().getMonth() + 1;
+            document.body.classList.remove('season-spring', 'season-summer', 'season-autumn', 'season-winter');
+            if (month >= 3 && month <= 5) document.body.classList.add('season-spring');
+            else if (month >= 6 && month <= 8) document.body.classList.add('season-summer');
+            else if (month >= 9 && month <= 11) document.body.classList.add('season-autumn');
+            else document.body.classList.add('season-winter');
+        }
+
+        // --- Random Events ---
+        function checkRandomEvent() {
+            const data = getTreeData();
+            if (data.lastEventDate === getTodayString()) return; // Only once per day
+            if (Math.random() > 0.35) return; // 35% chance
+            const month = new Date().getMonth() + 1;
+            const events = [];
+            events.push({ name: '🌧️ 午后雷阵雨', msg: '下雨啦，树喝饱了水，+20 生命力！', effect: () => addTreeEnergy(20), condition: true });
+            if (data.energy > 200) {
+                const noHabit = APP_DATA.habits.every(h => !(h.checkins || []).includes(getTodayString()));
+                if (noHabit) events.push({ name: '🐛 蚜虫侵袭', msg: '蚜虫来了！快去完成习惯任务赶走它们', effect: () => showToast('🐛 蚜虫来袭，今日效率降低'), condition: true });
+            }
+            if (data.energy > 300) events.push({ name: '🐦 啄木鸟帮忙', msg: '啄木鸟帮树治好了病，+15 生命力！', effect: () => addTreeEnergy(15), condition: true });
+            if (data.energy > 500) events.push({ name: '🦋 蝴蝶授粉', msg: '蝴蝶带来了花粉，+10 生命力！', effect: () => addTreeEnergy(10), condition: true });
+            if (data.energy >= 1000 && month >= 3 && month <= 5) events.push({ name: '🌸 开花季节', msg: '你的树开花了！+10 生命力', effect: () => { addTreeEnergy(10); showToast('🌸 树开花了，真美！'); }, condition: true });
+            if (data.energy >= 500 && month >= 9 && month <= 11) events.push({ name: '🍂 落叶肥土', msg: '落叶归根，土壤更肥沃了，+12 生命力', effect: () => addTreeEnergy(12), condition: true });
+            const valid = events.filter(e => e.condition);
+            if (valid.length === 0) return;
+            const chosen = valid[Math.floor(Math.random() * valid.length)];
+            data.lastEventDate = getTodayString();
+            saveTreeData(data);
+            showToast(chosen.msg);
+            chosen.effect();
+        }
+
+        // --- Tree Hole ---
+        function initTreeHole() {
+            const el = document.getElementById('life-module-treehole');
+            if (!el) return;
+            const data = getTreeData();
+            const msgs = data.treehole || [];
+            const lastReply = msgs.length > 0 ? msgs[msgs.length - 1] : null;
+            el.innerHTML = `
+                <div class="treehole-area">
+                    <div class="treehole-input-wrap">
+                        <input type="text" id="treehole-input" placeholder="写下今天的烦恼或愿望..." maxlength="200">
+                        <button onclick="postTreeHole()">写下</button>
+                    </div>
+                    <div class="treehole-reply" id="treehole-reply">${lastReply ? '🌳 树说：' + lastReply.reply : '树洞已就绪，有什么想说的吗？'}</div>
+                    <div class="treehole-history" id="treehole-history">${msgs.slice(-5).reverse().map(m => `<div class="treehole-history-item"><span>${m.text}</span><span style="font-size:11px;color:var(--text-secondary);">${m.reply}</span></div>`).join('')}</div>
+                </div>
+            `;
+        }
+
+        function postTreeHole() {
+            const input = document.getElementById('treehole-input');
+            const text = input.value.trim();
+            if (!text) { showToast('写点什么吧~'); return; }
+            const data = getTreeData();
+            if (!data.treehole) data.treehole = [];
+            const reply = TREE_HOLE_REPLIES[Math.floor(Math.random() * TREE_HOLE_REPLIES.length)];
+            data.treehole.push({ text, reply, date: getTodayString() });
+            if (data.treehole.length > 50) data.treehole = data.treehole.slice(-50);
+            saveTreeData(data);
+            input.value = '';
+            initTreeHole();
+            document.getElementById('treehole-reply').textContent = '🌳 树说：' + reply;
+            showToast('💚 已倾诉给树洞');
+            addTreeEnergy(2);
+        }
+
+        // --- Pest Game ---
+        function spawnPest() {
+            const area = document.getElementById('pest-area');
+            if (!area) return;
+            // Remove existing pest
+            area.querySelectorAll('.pest').forEach(p => p.remove());
+            const pest = document.createElement('div');
+            pest.className = 'pest';
+            pest.textContent = '🐛';
+            pest.style.left = (20 + Math.random() * 60) + '%';
+            pest.style.top = Math.random() * 20 + 'px';
+            pest.onclick = function() {
+                const data = getTreeData();
+                data.pestKilled = (data.pestKilled || 0) + 1;
+                saveTreeData(data);
+                showToast('💥 消灭害虫！+1 生命力');
+                addTreeEnergy(1);
+                this.remove();
+                // Respawn after delay
+                setTimeout(spawnPest, 15000);
+            };
+            area.appendChild(pest);
+        }
+
+        // --- Bird Songs Collection Display ---
+        function getBirdSongCollection() {
+            const data = getTreeData();
+            const types = data.birdTypes || [];
+            const all = Object.keys(BIRD_SONGS);
+            if (types.length >= 5) return '🎵 森林音乐会！所有鸟儿一起歌唱 🎶';
+            return `鸟鸣收集：${types.length}/${all.length} ${types.map(t => '🐦').join('')}`;
         }
 
         // --- Morning ---
@@ -3538,7 +3875,7 @@
             document.getElementById('morning-btn').textContent = '✅ 已打卡早安';
             document.getElementById('morning-msg').textContent = msg;
             setLifeData(LIFE_KEYS.morning, { lastDate: getTodayString() });
-            addPartnerEnergy(5);
+            addTreeEnergy(5);
             checkAchievements();
             showToast(msg);
             if (navigator.vibrate) navigator.vibrate(10);
@@ -3611,7 +3948,7 @@
             }
         }
 
-        const WHEEL_PRIZES = ['积分 +5', '积分 +10', '积分 +20', '能量 +5', '✨ 做自己的光', '✨ 今天超棒', '✨ 保持好心情', '✨ 你是最棒的'];
+        const WHEEL_PRIZES = ['能量+5', '能量+10', '能量+20', '能量+5', '能量+30', '能量+10', '能量+15', '能量+5'];
 
         function spinWheel() {
             const canvas = document.getElementById('wheel-canvas');
@@ -3627,7 +3964,10 @@
                 document.getElementById('wheel-result').textContent = '🎉 ' + prize;
                 document.getElementById('wheel-btn').textContent = '✅ 今日已抽奖';
                 setLifeData(LIFE_KEYS.wheel, { lastDate: getTodayString(), lastResult: prize });
-                if (prize.includes('能量')) addPartnerEnergy(5);
+                if (prize.includes('能量')) {
+                    const val = parseInt(prize.match(/\d+/)[0]) || 5;
+                    addTreeEnergy(val);
+                }
                 showToast('🎉 ' + prize);
             }, 3200);
         }
