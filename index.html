@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#F2F2F7" id="theme-color-meta">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <meta name="msapplication-TileColor" content="#007AFF">
-    <title>子灿 v2.2.2</title>
+    <title>子灿 v2.2.3</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -2051,6 +2051,10 @@
                             <div class="stat-label">紫外线</div>
                         </div>
                     </div>
+                    <div class="card" id="weather-advice-card">
+                        <div style="font-size: 17px; font-weight: 600; margin-bottom: 10px;">💡 生活小贴士</div>
+                        <div id="weather-advice-content" style="font-size: 14px; line-height: 1.7; color: var(--text-secondary);">加载中...</div>
+                    </div>
                     <div class="card">
                         <div style="font-size: 17px; font-weight: 600; margin-bottom: 12px;">3天预报</div>
                         <div id="forecast-list"></div>
@@ -2968,6 +2972,10 @@
                 document.getElementById('weather-wind').textContent = `${current.windspeedKmph}km/h`;
                 document.getElementById('weather-uv').textContent = current.uvIndex;
 
+                // Set weather advice
+                const advice = getWeatherAdvice(current, area);
+                document.getElementById('weather-advice-content').innerHTML = advice;
+
                 const forecastHTML = forecast.slice(0, 3).map(day => `
                     <div class="forecast-day">
                         <div style="font-size: 15px;">${formatForecastDate(day.date)}</div>
@@ -2997,6 +3005,42 @@
                 '389': '⛈️', '392': '⛈️', '395': '⛈️'
             };
             return emojis[code] || '🌤️';
+        }
+
+        function getWeatherAdvice(current, area) {
+            const temp = parseInt(current.temp_C) || 20;
+            const feels = parseInt(current.FeelsLikeC) || temp;
+            const humidity = parseInt(current.humidity) || 50;
+            const wind = parseInt(current.windspeedKmph) || 0;
+            const uv = parseInt(current.uvIndex) || 0;
+            const desc = current.weatherDesc[0].value || '';
+            const tips = [];
+            // Clothing advice
+            if (temp >= 30) tips.push('👕 短袖短裤，注意防暑降温');
+            else if (temp >= 25) tips.push('👕 短袖轻薄，透气为主');
+            else if (temp >= 20) tips.push('👚 单衣长袖，舒适宜人');
+            else if (temp >= 15) tips.push('🧥 薄外套或卫衣，早晚偏凉');
+            else if (temp >= 10) tips.push('🧥 夹克或针织衫，注意保暖');
+            else if (temp >= 5) tips.push('🧥 厚外套，气温较低注意添衣');
+            else tips.push('🧣 羽绒服/棉服，注意防寒保暖');
+            // UV advice
+            if (uv >= 8) tips.push('☀️ 紫外线极强，外出务必防晒');
+            else if (uv >= 5) tips.push('🌤️ 紫外线较强，建议涂防晒霜');
+            else if (uv >= 3) tips.push('⛅ 紫外线中等，注意适当防护');
+            // Wind advice
+            if (wind >= 50) tips.push('💨 大风天气，注意安全');
+            else if (wind >= 30) tips.push('🌬️ 风力较大，注意防风');
+            // Rain/snow advice
+            if (desc.includes('雨') || desc.includes('雷')) tips.push('🌂 记得带伞，有降雨可能');
+            if (desc.includes('雪') || desc.includes('霰')) tips.push('❄️ 有降雪，注意路滑');
+            if (desc.includes('雾') || desc.includes('霾')) tips.push('🌫️ 能见度低，出行注意安全');
+            // Humidity advice
+            if (humidity >= 85) tips.push('💧 湿度高，体感闷热，注意除湿');
+            else if (humidity <= 30) tips.push('🏜️ 空气干燥，多喝水保湿');
+            // Temperature difference
+            if (feels < temp - 3) tips.push('🌡️ 体感温度低于实际气温，适当多穿');
+            else if (feels > temp + 3) tips.push('🌡️ 体感温度高于实际气温，可适当减少衣物');
+            return tips.map(t => `<div style="margin-bottom:4px;">${t}</div>`).join('');
         }
 
         function formatForecastDate(dateStr) {
