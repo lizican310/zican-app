@@ -2856,9 +2856,35 @@
                 let cls = 'calendar-day';
                 if (isChecked) cls += ' checked';
                 if (isToday) cls += ' today';
-                html += `<div class="${cls}">${d}</div>`;
+                html += `<div class="${cls}" onclick="toggleCalendarCheckin('${dateStr}')">${d}</div>`;
             }
             grid.innerHTML = html;
+        }
+
+        function toggleCalendarCheckin(dateStr) {
+            const habit = APP_DATA.habits.find(h => h.id === _calendarHabitId);
+            if (!habit) return;
+            if (!habit.checkins) habit.checkins = [];
+            const idx = habit.checkins.indexOf(dateStr);
+            const isFuture = dateStr > getTodayString();
+            if (isFuture) {
+                showToast('⚠️ 不能预打卡');
+                return;
+            }
+            if (idx === -1) {
+                habit.checkins.push(dateStr);
+                logActivity('habit_checkin', { habitId: habit.id, habitName: habit.name, date: dateStr });
+                showToast('✅ ' + dateStr.slice(5) + ' 打卡成功');
+                if (navigator.vibrate) navigator.vibrate(10);
+            } else {
+                habit.checkins.splice(idx, 1);
+                showToast('已取消 ' + dateStr.slice(5) + ' 打卡');
+            }
+            habit.checkins.sort();
+            saveData();
+            renderCalendar();
+            loadHabitsPage();
+            if (currentPage === 'today') loadTodayHabits();
         }
 
         // ==================== Weekly Stats ====================
