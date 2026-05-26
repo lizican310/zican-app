@@ -3681,7 +3681,11 @@
 
         function loadLifePage() {
             const container = document.getElementById('life-cards-container');
-            const order = getLifeData(LIFE_KEYS.cardOrder, LIFE_MODULES.map(m => m.id));
+            let order = getLifeData(LIFE_KEYS.cardOrder, LIFE_MODULES.map(m => m.id));
+            if (!order || order.length === 0) {
+                order = LIFE_MODULES.map(m => m.id);
+                setLifeData(LIFE_KEYS.cardOrder, order);
+            }
             let html = '';
             order.forEach(id => {
                 const mod = LIFE_MODULES.find(m => m.id === id);
