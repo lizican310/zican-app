@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#F2F2F7" id="theme-color-meta">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <meta name="msapplication-TileColor" content="#007AFF">
-    <title>子灿 v2.2.0</title>
+    <title>子灿 v2.2.1</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -3682,7 +3682,7 @@
         function loadLifePage() {
             const container = document.getElementById('life-cards-container');
             let order = getLifeData(LIFE_KEYS.cardOrder, LIFE_MODULES.map(m => m.id));
-            if (!order || order.length === 0) {
+            if (!order || order.length === 0 || !order.every(id => LIFE_MODULES.some(m => m.id === id))) {
                 order = LIFE_MODULES.map(m => m.id);
                 setLifeData(LIFE_KEYS.cardOrder, order);
             }
