@@ -1915,6 +1915,8 @@
             if (idx === -1) {
                 habit.checkins.push(today);
                 logActivity('habit_checkin', { habitId, habitName: habit.name, date: today });
+                showToast('✅ 打卡成功');
+                if (navigator.vibrate) navigator.vibrate(10);
             } else {
                 habit.checkins.splice(idx, 1);
             }
@@ -2061,6 +2063,8 @@
             todo.doneDate = todo.done ? getTodayString() : null;
             if (todo.done && !wasDone) {
                 logActivity('todo_complete', { todoId, title: todo.title, doneDate: getTodayString() });
+                showToast('✅ 已完成');
+                if (navigator.vibrate) navigator.vibrate(10);
             }
             saveData();
             loadTodosPage();
