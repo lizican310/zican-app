@@ -1614,9 +1614,6 @@
             const now = new Date().toISOString();
             APP_DATA._cloudUpdated = now;
             localStorage.setItem('zican_app_data', JSON.stringify(APP_DATA));
-            // V16: Skip cloud push
-            return;
-            localStorage.setItem('zican_app_updated', now);
             pushToCloud(); // async, fire and forget
         }
 
