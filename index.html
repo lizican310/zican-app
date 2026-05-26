@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#F2F2F7" id="theme-color-meta">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <meta name="msapplication-TileColor" content="#007AFF">
-    <title>子灿 v2.2.1</title>
+    <title>子灿 v2.2.2</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -3696,7 +3696,7 @@
             // Load each module
             initTree();
             initTreeHole();
-            setTimeout(spawnPest, 3000);
+            scheduleNextPest();
             loadMorning();
             loadBadges();
             loadWheel();
@@ -4010,6 +4010,15 @@
         }
 
         // --- Pest Game ---
+        let _pestTimer = null;
+
+        function scheduleNextPest() {
+            if (_pestTimer) clearTimeout(_pestTimer);
+            // Random interval between 30-120 seconds
+            const delay = 30000 + Math.floor(Math.random() * 90000);
+            _pestTimer = setTimeout(spawnPest, delay);
+        }
+
         function spawnPest() {
             const area = document.getElementById('pest-area');
             if (!area) return;
@@ -4024,13 +4033,21 @@
                 const data = getTreeData();
                 data.pestKilled = (data.pestKilled || 0) + 1;
                 saveTreeData(data);
-                showToast('💥 消灭害虫！+1 生命力');
+                showToast(`💥 消灭害虫！总计 ${data.pestKilled} 只`);
                 addTreeEnergy(1);
+                checkAchievements();
                 this.remove();
-                // Respawn after delay
-                setTimeout(spawnPest, 15000);
+                // Next pest randomly
+                scheduleNextPest();
             };
             area.appendChild(pest);
+            // Auto-remove after 20 seconds if not clicked, then reschedule
+            pest._autoRemove = setTimeout(() => {
+                if (pest.parentNode) {
+                    pest.remove();
+                    scheduleNextPest();
+                }
+            }, 20000);
         }
 
         // --- Bird Songs Collection Display ---
@@ -4192,7 +4209,8 @@
             { id: 'combo', name: '连击王者', desc: '连续 7 天完成待办', icon: '👑', check: () => { const t = APP_DATA.todos.filter(d => d.done && d.doneDate === getTodayString()); return t.length > 0 ? 1 : 0; }, target: 7 },
             { id: 'checkin', name: '打卡狂魔', desc: '累计打卡 30 次', icon: '📅', check: () => { let c = 0; APP_DATA.habits.forEach(h => c += (h.checkins || []).length + (h.baseCount || 0)); return c; }, target: 30 },
             { id: 'moodster', name: '心情记录家', desc: '累计心情记录 7 次', icon: '😊', check: () => { const m = getLifeData(LIFE_KEYS.moods, []); return m.length; }, target: 7 },
-            { id: 'bookkeeper', name: '记账新手', desc: '累计记账 10 笔', icon: '📒', check: () => { const a = getLifeData(LIFE_KEYS.accounting, []); return a.length; }, target: 10 }
+            { id: 'bookkeeper', name: '记账新手', desc: '累计记账 10 笔', icon: '📒', check: () => { const a = getLifeData(LIFE_KEYS.accounting, []); return a.length; }, target: 10 },
+            { id: 'pestkiller', name: '健康卫士', desc: '累计消灭 10 只害虫', icon: '🛡️', check: () => { const d = getTreeData(); return d.pestKilled || 0; }, target: 10 }
         ];
 
         function loadBadges() {
