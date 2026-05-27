@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#F2F2F7" id="theme-color-meta">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <meta name="msapplication-TileColor" content="#007AFF">
-    <title>子灿 v2.2.3</title>
+    <title>子灿 v2.2.4</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -2362,7 +2362,14 @@
         const SUPABASE_URL = 'https://tiaaldbhzwaxjecmmfqg.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRpYWFsZGJoendheGplY21tZnFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NTIyODYsImV4cCI6MjA5NTIyODI4Nn0.zqHOU_g3aWfrnvYfved6Kz-J2kYAxZoIRlj8uJpuSpE';
         let supabaseClient = null;
-        let cloudSyncEnabled = true; // V17: Enabled
+        let cloudSyncEnabled = true;
+
+        // Extra localStorage keys that need cross-device sync (tree + life modules)
+        const SYNC_EXTRA_KEYS = [
+            'zican_tree', 'zican_life_morning', 'zican_life_badges', 'zican_life_wheel',
+            'zican_life_reminders', 'zican_life_moods', 'zican_life_accounting',
+            'zican_life_acct_cats', 'zican_life_card_order', 'zican_night_asked'
+        ];
 
         function initSupabase() {
             try {
@@ -2379,21 +2386,23 @@
 
         async function pushToCloud() {
             if (!cloudSyncEnabled || !supabaseClient) return false;
-            // Safety: never push empty data to cloud (would wipe other devices)
             const habits = APP_DATA.habits || [];
             const todos = APP_DATA.todos || [];
-            if (habits.length === 0 && todos.length === 0) {
-                console.warn('Skipping push: no habits or todos (safety)');
-                return false;
-            }
             try {
                 const dataToSave = JSON.parse(JSON.stringify(APP_DATA));
+                // Collect extra localStorage keys for cross-device sync
+                dataToSave._extra = {};
+                SYNC_EXTRA_KEYS.forEach(key => {
+                    try {
+                        const v = localStorage.getItem(key);
+                        if (v) dataToSave._extra[key] = JSON.parse(v);
+                    } catch(e) {}
+                });
                 delete dataToSave._version;
                 const { data, error } = await supabaseClient
                     .from('app_state')
                     .upsert({ id: 'default', data: dataToSave, updated_at: new Date().toISOString() }, { onConflict: 'id' });
                 if (error) {
-                    // Table might not exist, try creating it via RPC or just fail gracefully
                     if (error.code === '42P01' || error.message.includes('does not exist')) {
                         console.warn('Table app_state does not exist yet');
                         return false;
@@ -4687,6 +4696,12 @@
                         APP_DATA.todos = Array.from(todoMap.values());
                         APP_DATA._version = DATA_VERSION;
                         localStorage.setItem('zican_app_data', JSON.stringify(APP_DATA));
+                        // Restore extra sync keys (tree + life modules) to localStorage
+                        if (cloudData._extra) {
+                            Object.keys(cloudData._extra).forEach(key => {
+                                localStorage.setItem(key, JSON.stringify(cloudData._extra[key]));
+                            });
+                        }
                         saveData();
                         loadTodayPage();
                         loadHabitsTodosPage();
