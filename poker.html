@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>♠️ 好友扑克 v2.0.0</title>
+<title>♠️ 好友扑克 v3.0.0</title>
 <style>
 :root{--bg:#0D1117;--card-bg:#1A1D24;--surface:#252830;--text:#E6E8EB;--text2:#8B8E96;--primary:#007AFF;--green:#34C759;--red:#FF3B30;--orange:#FF9500;--yellow:#FFD60A;--radius:12px}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -156,10 +156,25 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 .s-pos.utg{background:#007AFF;color:#fff}
 .s-pos.other{background:#8B8E96;color:#fff}
 
-/* Dealer character */
-.dealer-area{position:absolute;top:2px;left:50%;transform:translateX(-50%);text-align:center;z-index:5}
-.dealer-char{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1a237e,#4a148c);display:flex;align-items:center;justify-content:center;font-size:16px;margin:0 auto;border:2px solid #FFD60A;box-shadow:0 2px 8px rgba(0,0,0,.3)}
-.dealer-label{font-size:8px;color:rgba(255,255,255,.6);margin-top:1px}
+/* Dealer character with animation */
+.dealer-area{position:absolute;top:4px;left:50%;transform:translateX(-50%);text-align:center;z-index:10}
+.dealer-char{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#e91e63,#ff6b9d);display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto;border:2px solid #FFD60A;box-shadow:0 2px 12px rgba(233,30,99,.4);animation:dealerFloat 2s ease-in-out infinite, dealerBlink 3s step-end infinite}
+.dealer-char::after{content:'';position:absolute;width:6px;height:6px;border-radius:50%;background:#fff;top:12px;right:10px;opacity:0;animation:dealerWink 3s step-end infinite}
+.dealer-label{font-size:9px;color:rgba(255,255,255,.7);margin-top:2px;font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+@keyframes dealerFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes dealerBlink{0%,95%,100%{opacity:1}97%{opacity:0.3}}
+@keyframes dealerWink{0%,95%,100%{opacity:0}97%{opacity:1}}
+
+/* Table lobby mode (pre-game seat management on table) */
+.table-lobby .seat{position:absolute;text-align:center;cursor:pointer}
+.table-lobby .seat .s-avatar{width:44px;height:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;margin:0 auto 2px;border:2px solid transparent;transition:all .2s}
+.table-lobby .seat:hover .s-avatar{border-color:var(--primary);transform:scale(1.05)}
+.table-lobby .seat.empty .s-avatar{border:2px dashed var(--text2);background:rgba(255,255,255,.05);cursor:pointer}
+.table-lobby .seat.empty .s-name{color:var(--text2);font-size:11px}
+.table-lobby .seat.host .s-avatar{border-color:var(--yellow);box-shadow:0 0 10px rgba(255,214,10,.3)}
+.table-lobby .seat .s-tag{font-size:9px;color:var(--text2);margin-top:1px}
+.table-lobby .seat .s-add-btn{width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:4px auto 0;opacity:0.8}
+.table-lobby .seat .s-add-btn:active{transform:scale(0.9)}
 
 /* Enhanced table */
 .table-felt.full{background:radial-gradient(ellipse at center,#1a5c2a 0%,#0d3b1a 60%,#0a2e14 100%);border:3px solid #4a2800;box-shadow:inset 0 0 40px rgba(0,0,0,.3),0 4px 20px rgba(0,0,0,.4)}
@@ -363,12 +378,22 @@ console.log('[POKER] Supabase REST client ready');
   <div class="table-container">
     <div class="table-felt full" id="pokerTable">
       <div class="felt-border"></div>
-      <button onclick="showRules()" style="position:absolute;bottom:8px;right:8px;z-index:10;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:20px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)">?</button>
-      <div class="dealer-area" id="dealerArea">
-        <div class="dealer-char">🎩</div>
-        <div class="dealer-label">荷官</div>
+      <!-- Room info bar -->
+      <div style="position:absolute;top:4px;left:8px;z-index:10;display:flex;flex-direction:column;gap:2px;">
+        <div style="font-size:11px;color:rgba(255,255,255,.7);font-weight:600;" id="tableRoomCode">---</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5);" id="tablePlayerCount">0/8人</div>
       </div>
-      <div class="phase-label" id="phaseLabel">等待开始...</div>
+      <button onclick="showRules()" style="position:absolute;bottom:8px;right:8px;z-index:10;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:20px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)">?</button>
+      <!-- Game control buttons (host only, pre-game) -->
+      <div style="position:absolute;top:4px;right:8px;z-index:10;display:flex;gap:4px;" id="tableGameControls">
+        <button class="btn btn-green" id="btnTableStart" onclick="startGameFromTable()" style="padding:4px 10px;font-size:11px;min-height:30px;display:none;">🃏 开始游戏</button>
+        <button class="btn btn-outline" onclick="leaveTableToLobby()" style="padding:4px 8px;font-size:10px;min-height:30px;min-width:auto;color:var(--red);border-color:var(--red);">退出</button>
+      </div>
+      <div class="dealer-area" id="dealerArea">
+        <div class="dealer-char">💁‍♀️</div>
+        <div class="dealer-label">小雅</div>
+      </div>
+      <div class="phase-label" id="phaseLabel">等待开始，点击空位添加机器人...</div>
       <div class="community-area">
         <div class="community-cards" id="communityCards">
           <div class="community-card back"></div><div class="community-card back"></div><div class="community-card back"></div>
@@ -1038,8 +1063,9 @@ async function createRoom(){
     await supabase.from('poker_rooms').insert(room);
     closeModal('modal-create');
     __roomCode=roomName;__gameType=gameType;__blind=blind;__botDiff=diff;__maxPlayers=mp;__roomName=roomName;__seats=[...seats];__usedBotNames=[];
-    showScreen('room');
-    initRoom();
+    __gameState=null; // No game state yet
+    showScreen('table');
+    enterTableLobby(true); // true = i am host
   }catch(e){
     if(e&&e.status===409)showToast('房间名已存在，请换一个');
     else showToast('创建失败');
@@ -1048,27 +1074,30 @@ async function createRoom(){
 }
 
 async function joinRoom(code){
-  if(code===__roomCode){showScreen('room');initRoom();return}
+  if(code===__roomCode){showScreen('table');enterTableLobby();return}
   const {data}=await supabase.from('poker_rooms').select('*').eq('room_code',code).maybeSingle();
   if(!data){showToast('房间不存在');return}
-  if(data.status==='playing'){showToast('游戏中，暂不可加入');return}
   let seats=parseSeats(data.players);
   if(!seats||seats.length===0){showToast('房间数据异常');return}
   // Check if already in room
-  if(seats.some(s=>s&&s.nickname===__nickname)){showToast('已在房间中');applyRoomData(data,seats);showScreen('room');initRoom();return}
+  if(seats.some(s=>s&&s.nickname===__nickname)){showToast('已在房间中');applyRoomData(data,seats);showScreen('table');enterTableLobby();return}
+  // If playing, try to join mid-game
+  if(data.status==='playing'){
+    applyRoomData(data,seats);
+    showScreen('table');
+    loadGameState();
+    return;
+  }
   // Find empty seat or replace bot
   let emptyIdx=seats.findIndex(s=>s===null);
   let botIdx=seats.findIndex(s=>s&&s.type==='bot');
-  let placed=false;
-  if(emptyIdx>=0){seats[emptyIdx]={nickname:__nickname,type:'human'};placed=true}
-  else if(botIdx>=0){seats[botIdx]={nickname:__nickname,type:'human'};placed=true;showToast('已替换电脑玩家')}
+  if(emptyIdx>=0){seats[emptyIdx]={nickname:__nickname,type:'human'}}
+  else if(botIdx>=0){seats[botIdx]={nickname:__nickname,type:'human'};showToast('已替换电脑玩家')}
   else{showToast('房间已满');return}
-  if(placed){
-    await supabase.from('poker_rooms').update({players:JSON.stringify(seats)}).eq('room_code',code);
-    applyRoomData(data,seats);
-    showScreen('room');
-    initRoom();
-  }
+  await supabase.from('poker_rooms').update({players:JSON.stringify(seats)}).eq('room_code',code);
+  applyRoomData(data,seats);
+  showScreen('table');
+  enterTableLobby();
 }
 function applyRoomData(data,seats){
   __roomCode=data.room_code;__roomName=data.room_code;
@@ -1082,6 +1111,166 @@ function parseSeats(players){
   if(players.length>0&&typeof players[0]==='object')return players;
   // Old format: ["nick1","nick2"] — convert
   return players.map(n=>n?{nickname:n,type:'human'}:null);
+}
+
+// ==================== Table Lobby (Pre-game) ====================
+let _tableLobbySub=null;
+function enterTableLobby(isHost){
+  __gameState=null;
+  document.getElementById('tableRoomCode').textContent='🏠 '+__roomName;
+  document.getElementById('phaseLabel').textContent='等待开始，点击空位添加机器人...';
+  document.getElementById('communityCards').innerHTML='';
+  document.getElementById('potDisplay').innerHTML='';
+  // Start syncing room data
+  if(_tableLobbySub)_tableLobbySub.unsubscribe();
+  _tableLobbySub=supabase.channel('tl-'+__roomCode)
+    .on('postgres_changes',{event:'*',schema:'public',table:'poker_rooms',filter:`room_code=eq.${__roomCode}`},()=>refreshTableLobby())
+    .subscribe();
+  refreshTableLobby();
+}
+async function refreshTableLobby(){
+  const {data}=await supabase.from('poker_rooms').select('*').eq('room_code',__roomCode).maybeSingle();
+  if(!data)return;
+  const seats=parseSeats(data.players);
+  if(!seats)return;
+  // If already in a game, don't re-render lobby
+  if(__gameState&&data.status==='playing'){return}
+  __seats=seats;
+  __maxPlayers=data.max_players||seats.length||6;
+  const isHost=data.host_nickname===__nickname;
+  const filled=seats.filter(s=>s!==null).length;
+  document.getElementById('tablePlayerCount').textContent=filled+'/'+__maxPlayers+'人';
+
+  // If room switched to playing, transition to game
+  if(data.status==='playing'&&!__gameState){
+    if(_tableLobbySub){_tableLobbySub.unsubscribe();_tableLobbySub=null}
+    document.getElementById('btnTableStart').style.display='none';
+    document.getElementById('phaseLabel').textContent='游戏进行中...';
+    loadGameState();
+    startChatSync();
+    return;
+  }
+
+  // Show/hide start game button for host
+  const startBtn=document.getElementById('btnTableStart');
+  if(isHost){
+    startBtn.style.display='inline-flex';
+    startBtn.disabled=filled<2;
+    startBtn.textContent=filled<2?'需要2人':'🃏 开始游戏';
+  }else{
+    startBtn.style.display='none';
+  }
+  document.getElementById('tableRoomCode').textContent='🏠 '+data.room_code;
+  renderTableLobby(seats,isHost);
+}
+
+function renderTableLobby(seats,isHost){
+  const area=document.getElementById('seatArea');
+  if(!area)return;
+  const n=seats.length;
+  const positions=getSeatPositions(n);
+  area.innerHTML=seats.map((s,i)=>{
+    const pos=positions[i]||{x:50,y:50};
+    if(!s){
+      // Empty seat
+      const addBtn=isHost?`<div class="s-add-btn" onclick="showSeatMenu(${i})">+</div>`:'';
+      return `<div class="seat empty" onclick="${isHost?`showSeatMenu(${i})`:''}" style="left:${pos.x}%;top:${pos.y}%;transform:translate(-50%,-50%);">
+        <div class="s-avatar" style="background:transparent;">?</div>
+        <div class="s-name">空座位 #${i+1}</div>
+        ${addBtn}
+      </div>`;
+    }
+    const isMe=s.nickname===__nickname;
+    const isBot=s.type==='bot';
+    const hostClass=isMe?' host':'';
+    const avatarBg=isMe?'var(--primary)':isBot?'var(--orange)':'var(--surface)';
+    const avatarLetter=s.nickname[0];
+    const badge=isMe?' 👑':isBot?' 🤖':'';
+    return `<div class="seat${hostClass}" onclick="${isHost?`showSeatMenu(${i})`:''}" style="left:${pos.x}%;top:${pos.y}%;transform:translate(-50%,-50%);cursor:${isHost?'pointer':'default'};">
+      <div class="s-avatar" style="background:${avatarBg};">${avatarLetter}</div>
+      <div class="s-name">${s.nickname}${badge}</div>
+      <div class="s-chips">💰5000</div>
+    </div>`;
+  }).join('');
+}
+
+// Seat click menu on table
+function showSeatMenu(idx){
+  window.__selectedSeat=idx;
+  const seat=__seats[idx];
+  const info=document.getElementById('seatActionInfo');
+  const addBtn=document.getElementById('seatActionAddBot');
+  const remBtn=document.getElementById('seatActionRemoveBot');
+  if(!seat){
+    // Empty seat
+    document.getElementById('seatActionTitle').textContent='🪑 #'+(idx+1)+' 空座位';
+    info.textContent='点击添加机器人到该座位';
+    addBtn.style.display='block';
+    remBtn.style.display='none';
+  }else if(seat.type==='bot'){
+    document.getElementById('seatActionTitle').textContent='🤖 '+seat.nickname;
+    info.textContent='机器人玩家';
+    addBtn.style.display='none';
+    remBtn.style.display='block';
+  }else{
+    showToast('真人玩家不可操作');
+    return;
+  }
+  showModal('modal-seat-action');
+}
+
+async function performSeatAction(action){
+  const idx=window.__selectedSeat;
+  if(idx===undefined||idx===null)return;
+  const {data}=await supabase.from('poker_rooms').select('players').eq('room_code',__roomCode).maybeSingle();
+  if(!data)return;
+  const seats=parseSeats(data.players);
+  if(!seats||idx>=seats.length)return;
+  if(action==='add_bot'&&seats[idx]===null){
+    const botName='🤖 '+getRandomBotName();
+    seats[idx]={nickname:botName,type:'bot'};
+    await supabase.from('poker_rooms').update({players:JSON.stringify(seats)}).eq('room_code',__roomCode);
+    __seats=seats;
+    refreshTableLobby();
+    showToast('已添加 '+botName);
+  }else if(action==='remove_bot'&&seats[idx]&&seats[idx].type==='bot'){
+    seats[idx]=null;
+    await supabase.from('poker_rooms').update({players:JSON.stringify(seats)}).eq('room_code',__roomCode);
+    __seats=seats;
+    refreshTableLobby();
+    showToast('已移除机器人');
+  }
+  closeModal('modal-seat-action');
+}
+
+async function startGameFromTable(){
+  const {data}=await supabase.from('poker_rooms').select('players,host_nickname,game_type,blind_structure,bot_difficulty').eq('room_code',__roomCode).maybeSingle();
+  if(!data)return;
+  if(data.host_nickname!==__nickname){showToast('仅房主可开始');return}
+  const seats=parseSeats(data.players);
+  if(!seats)return;
+  const allPlayers=seats.filter(s=>s!==null).map(s=>s.nickname);
+  if(allPlayers.length<2){showToast('至少需要2名玩家');return}
+  // Update room status and start
+  await supabase.from('poker_rooms').update({status:'playing'}).eq('room_code',__roomCode);
+  // Stop table lobby sync, start game
+  if(_tableLobbySub){_tableLobbySub.unsubscribe();_tableLobbySub=null}
+  document.getElementById('btnTableStart').style.display='none';
+  initGameState(allPlayers);
+  startChatSync();
+}
+
+function leaveTableToLobby(){
+  if(__gameState){
+    if(!confirm('确定退出当前牌局？'))return;
+    if(_gameSub){_gameSub.unsubscribe();_gameSub=null}
+    if(_chatSub){_chatSub.unsubscribe();_chatSub=null}
+    if(_turnTimer){clearTimeout(_turnTimer);_turnTimer=null}
+    stopRenderTimer();
+    __gameState=null;
+  }
+  if(_tableLobbySub){_tableLobbySub.unsubscribe();_tableLobbySub=null}
+  leaveRoom();
 }
 
 // ==================== Room Wait ====================
@@ -1182,16 +1371,11 @@ async function startGameAlready(data){
 }
 
 async function leaveTable(){
-  if(!confirm('确定退出当前游戏？'))return;
-  if(_gameSub){_gameSub.unsubscribe();_gameSub=null}
-  if(_chatSub){_chatSub.unsubscribe();_chatSub=null}
-  if(_turnTimer){clearTimeout(_turnTimer);_turnTimer=null}
-  stopRenderTimer();
-  __gameState=null;
-  await leaveRoom();
+  leaveTableToLobby();
 }
 async function leaveRoom(){
   if(_roomSub){_roomSub.unsubscribe();_roomSub=null}
+  if(_tableLobbySub){_tableLobbySub.unsubscribe();_tableLobbySub=null}
   // Remove self from seats
   const {data}=await supabase.from('poker_rooms').select('players,host_nickname,room_code').eq('room_code',__roomCode).maybeSingle();
   if(data){
@@ -1308,7 +1492,11 @@ function startGameSync(){
 
 async function loadGameState(){
   const {data}=await supabase.from('poker_game_states').select('state').eq('room_code',__roomCode).maybeSingle();
-  if(data&&data.state){__gameState=data.state;renderTable();startRenderTimer();startTurnTimer();startGameSync()}
+  if(data&&data.state){
+    __gameState=data.state;
+    document.getElementById('btnTableStart').style.display='none';
+    renderTable();startRenderTimer();startTurnTimer();startGameSync();
+  }
 }
 
 // ==================== Turn Timer ====================
@@ -1597,6 +1785,10 @@ async function nextHand(){
 function renderTable(){
   const state=__gameState;
   if(!state)return;
+  // Update room info bar
+  document.getElementById('tableRoomCode').textContent='🏠 '+__roomName;
+  const totalPlayers=state.players.length;
+  document.getElementById('tablePlayerCount').textContent=totalPlayers+'人';
   // Phase
   const phaseNames={idle:'等待中',preflop:'翻牌前',flop:'翻牌',turn:'转牌',river:'河牌',showdown:'摊牌'};
   document.getElementById('phaseLabel').textContent=phaseNames[state.phase]||state.phase;
@@ -2001,8 +2193,8 @@ document.addEventListener('visibilitychange',()=>{
       loadGameState().catch(()=>{});
       showToast('🔄 已重新连接');
     }else if(__roomCode&&!__gameState){
-      // In room but not playing, refresh room data
-      loadRoomData().catch(()=>{});
+      // In room but not playing, refresh table lobby
+      refreshTableLobby().catch(()=>{});
     }
   }
 });
