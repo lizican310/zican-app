@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>♠️ 好友扑克 v1.3.0</title>
+<style>
+:root{--bg:#0D1117;--card-bg:#1A1D24;--surface:#252830;--text:#E6E8EB;--text2:#8B8E96;--primary:#007AFF;--green:#34C759;--red:#FF3B30;--orange:#FF9500;--yellow:#FFD60A;--radius:12px}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;min-height:100dvh;overflow:hidden}
+.screen{display:none;flex-direction:column;height:100vh;height:100dvh;overflow-y:auto;padding:16px;max-width:600px;margin:0 auto;width:100%}
+.screen.active{display:flex}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 20px;border-radius:10px;font-size:16px;font-weight:600;border:none;cursor:pointer;min-height:44px;transition:all .15s;gap:6px}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-green{background:var(--green);color:#fff}
+.btn-red{background:var(--red);color:#fff}
+.btn-outline{background:transparent;border:1.5px solid var(--text2);color:var(--text)}
+.btn:active{transform:scale(0.96);opacity:0.8}
+.btn:disabled{opacity:0.4;pointer-events:none}
+.input{width:100%;padding:12px 16px;border-radius:10px;font-size:16px;border:1.5px solid var(--surface);background:var(--card-bg);color:var(--text);outline:none;transition:border .2s}
+.input:focus{border-color:var(--primary)}
+.card-box{background:var(--card-bg);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.title{font-size:24px;font-weight:700;margin-bottom:16px}
+.subtitle{font-size:15px;color:var(--text2);margin-bottom:12px}
+.flex{display:flex;gap:8px;flex-wrap:wrap}
+.flex-center{display:flex;align-items:center;justify-content:center;gap:8px}
+.gap-4{gap:4px}
+.mt-8{margin-top:8px}
+.mt-12{margin-top:12px}
+.mt-16{margin-top:16px}
+.mb-8{margin-bottom:8px}
+.mb-12{margin-bottom:12px}
+.text-center{text-align:center}
+.text2{color:var(--text2);font-size:14px}
+.text-sm{font-size:13px}
+.text-lg{font-size:18px;font-weight:600}
+.w-full{width:100%}
+
+/* Login */
+.login-logo{font-size:56px;text-align:center;margin:60px 0 20px}
+.login-sub{text-align:center;color:var(--text2);margin-bottom:32px;font-size:15px}
+
+/* Lobby */
+.lobby-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.room-item{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:var(--card-bg);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.room-item:active{opacity:0.7}
+.room-code{font-size:18px;font-weight:700;color:var(--primary)}
+.room-info{font-size:13px;color:var(--text2);margin-top:2px}
+.room-join{padding:6px 14px;font-size:13px;border-radius:8px;background:var(--green);color:#fff;border:none;cursor:pointer}
+
+/* Room Wait */
+.wait-header{text-align:center;margin:20px 0}
+.wait-code{font-size:40px;font-weight:800;letter-spacing:6px;color:var(--primary)}
+.player-list{margin:12px 0}
+.player-chip{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);border-radius:10px;margin-bottom:6px}
+.player-chip .avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;background:var(--primary)}
+.player-chip .is-host{font-size:11px;color:var(--yellow);margin-left:4px}
+.player-chip .is-bot{font-size:11px;color:var(--text2)}
+
+/* Poker Table */
+.table-container{flex:1;display:flex;flex-direction:column;position:relative;padding:4px;max-width:600px;margin:0 auto;width:100%}
+.table-felt{background:linear-gradient(135deg,#1a5c2a,#2d8a4e);border-radius:16px;flex:1;display:flex;flex-direction:column;padding:8px;position:relative;overflow:hidden;min-height:380px}
+.seat-area{position:relative;flex:1}
+.seat{position:absolute;text-align:center}
+.seat .s-avatar{width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;margin:0 auto 2px;border:2px solid transparent}
+.seat .s-avatar.active{border-color:var(--yellow);animation:pulse 1s infinite}
+.seat .s-name{font-size:11px;color:#fff;font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.seat .s-chips{font-size:10px;color:rgba(255,255,255,.7)}
+.seat .s-cards{display:flex;gap:2px;justify-content:center;margin-top:2px}
+.seat .s-card{width:28px;height:40px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.seat .s-card.red{color:var(--red)}
+.seat .s-card.back{background:linear-gradient(135deg,#1a237e,#283593);color:transparent}
+.seat .s-bet{font-size:10px;color:var(--yellow);margin-top:2px}
+@keyframes pulse{0%{opacity:1}50%{opacity:.6}100%{opacity:1}}
+
+.community-area{text-align:center;padding:10px 0}
+.community-cards{display:flex;gap:4px;justify-content:center}
+.community-card{width:34px;height:48px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.community-card.red{color:var(--red)}
+.community-card.back{background:linear-gradient(135deg,#1a237e,#283593);color:transparent}
+.pot-display{text-align:center;font-size:14px;color:rgba(255,255,255,.8);margin:4px 0}
+.phase-label{text-align:center;font-size:13px;color:rgba(255,255,255,.6);margin-bottom:4px}
+
+/* Action Bar */
+.action-bar{display:flex;gap:6px;padding:8px 4px;flex-wrap:wrap;justify-content:center}
+.action-bar .btn{font-size:13px;padding:10px 16px;flex:1;min-width:60px;max-width:100px}
+.raise-input{display:flex;gap:6px;align-items:center;width:100%;max-width:300px;margin:4px auto}
+.raise-input .input{flex:1;text-align:center;font-size:18px;padding:8px}
+
+/* Chat */
+.chat-area{background:var(--card-bg);border-radius:var(--radius);margin-top:8px;max-height:160px;display:flex;flex-direction:column}
+.chat-msgs{flex:1;overflow-y:auto;padding:8px 12px;font-size:13px;max-height:100px}
+.chat-msg{margin-bottom:4px;line-height:1.4}
+.chat-msg .nick{color:var(--primary);font-weight:600}
+.chat-msg .dealer{color:var(--orange);font-style:italic}
+.chat-input-row{display:flex;gap:6px;padding:6px 8px;border-top:1px solid var(--surface)}
+.chat-input-row .input{font-size:13px;padding:8px 12px}
+.chat-input-row .btn{font-size:13px;padding:8px 14px;min-width:auto}
+
+/* Landing mode */
+@media (orientation:landscape){.table-felt{min-height:300px}}
+@media(min-width:768px){.table-felt{min-height:450px}}
+
+/* Modals */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.active{display:flex}
+.modal-box{background:var(--card-bg);border-radius:16px;padding:24px;width:100%;max-width:400px;max-height:80vh;overflow-y:auto}
+.modal-title{font-size:20px;font-weight:700;margin-bottom:16px}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text2);font-size:24px;cursor:pointer}
+
+/* History */
+.history-item{padding:10px 0;border-bottom:1px solid var(--surface);font-size:14px;line-height:1.5}
+.history-item:last-child{border:none}
+.history-won{color:var(--green);font-weight:600}
+.history-lost{color:var(--red);font-weight:600}
+
+/* Rules */
+.rule-section{margin-bottom:12px}
+.rule-section h3{font-size:16px;margin-bottom:6px;color:var(--primary)}
+.rule-section p{font-size:14px;color:var(--text2);line-height:1.6}
+
+/* Admin */
+.admin-table{table-layout:fixed;width:100%;border-collapse:collapse;font-size:14px}
+.admin-table th,.admin-table td{padding:8px 6px;text-align:left;border-bottom:1px solid var(--surface)}
+.admin-table th{color:var(--text2);font-weight:600}
+.admin-del{color:var(--red);cursor:pointer;font-size:13px}
+
+/* Toast */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;z-index:3000;animation:fadeIn .3s;white-space:nowrap}
+@keyframes fadeIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* Scroll */
+::-webkit-scrollbar{width:0;height:0}
+
+/* Bot count selector */
+.bot-select{display:flex;gap:6px;align-items:center;margin:8px 0}
+.bot-select button{width:36px;height:36px;border-radius:50%;background:var(--surface);color:var(--text);border:1px solid var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.bot-select span{font-size:18px;font-weight:700;min-width:24px;text-align:center}
+
+/* Sound toggle */
+.sound-toggle{position:fixed;top:12px;right:12px;z-index:100;background:var(--surface);border:none;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:var(--text);font-size:18px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<!-- Sound Toggle -->
+<button class="sound-toggle" id="soundToggle">🔊</button>
+
+<!-- Inline Supabase REST client (no CDN needed) -->
+<script>
+// ==================== Supabase REST Client ====================
+(function(){
+const URL='https://tiaaldbhzwaxjecmmfqg.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRpYWFsZGJoendheGplY21tZnFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NTIyODYsImV4cCI6MjA5NTIyODI4Nn0.zqHOU_g3aWfrnvYfved6Kz-J2kYAxZoIRlj8uJpuSpE';
+const H={'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Accept':'application/json','Prefer':'return=minimal'};
+function op(v){const o=['neq.','cs.','gte.','lte.','gt.','lt.','like.','ilike.','is.'];return typeof v=='string'&&o.some(p=>v.startsWith(p))?v:'eq.'+v}
+const POLL={};
+function pollChan(t,f,cb,int=2000){
+  const k=t+':'+JSON.stringify(f);if(POLL[k])clearInterval(POLL[k])
+  let last='',lastId=0;async function p(){
+    try{
+      const s=f?Object.entries(f).map(([eK,eV])=>`${eK}=${encodeURIComponent(op(eV))}`).join('&'):'select=*&order=created_at.desc&limit=20';
+      const r=await fetch(URL+'/rest/v1/'+t+'?select=*&'+s,{headers:H});if(!r.ok)return;
+      const rows=await r.json();
+      if(t==='poker_chat_messages'){
+        const maxId=rows.length>0?Math.max(...rows.map(x=>x.id||0)):0;
+        if(maxId>lastId){
+          if(lastId>0)rows.filter(x=>(x.id||0)>lastId).forEach(x=>cb({new:x}));
+          lastId=maxId;
+        }
+      }else{
+        const json=JSON.stringify(rows);if(json===last)return;
+        last=json;if(rows.length>0)cb({new:rows[0]})
+      }
+    }catch(e){}
+  }p();POLL[k]=setInterval(p,int);
+}
+function stopPoll(key){if(POLL[key]){clearInterval(POLL[key]);delete POLL[key]}}
+window.__sb={
+  from:function(t){
+    const BASE=URL+'/rest/v1/'+t;let F={},O=null,D='asc',L=0;
+    function url(cs){
+      let u=BASE+'?select='+encodeURIComponent(cs||'*');
+      const fs=Object.entries(F).map(([k,v])=>`${k}=${encodeURIComponent(op(v))}`).join('&');
+      if(fs)u+='&'+fs;if(O)u+='&order='+encodeURIComponent(O+'.'+D);if(L>0)u+='&limit='+L;
+      return u;
+    }
+    async function _exec(m,u,obj){try{const o={method:m,headers:{...H}};if(obj)o.body=JSON.stringify(obj);const r=await fetch(u,o);return{error:r.ok?null:r.status}}catch(e){return{error:e}}}
+    function _thenable(cs,single){
+      return{
+        then:function(r,j){
+          const u=url(cs);
+          fetch(u,{headers:H}).then(res=>{
+            if(!res.ok){r(single?{data:null,error:res.status}:{data:[],error:res.status});return}
+            res.json().then(d=>{r(single?{data:d[0]||null,error:null}:{data:d,error:null})})
+          }).catch(e=>r(single?{data:null,error:e}:{data:[],error:e}))
+        },
+        eq:(k,v)=>{F[k]=v;return _thenable(cs,single)},neq:(k,v)=>{F[k]='neq.'+v;return _thenable(cs,single)},
+        order:(c,o)=>{O=c;D=o?.ascending!==false?'asc':'desc';return _thenable(cs,single)},
+        limit:n=>{L=n;return _thenable(cs,single)},match:q=>{Object.assign(F,q);return _thenable(cs,single)},
+        contains:(c,v)=>{F[c]='cs.'+JSON.stringify(v);return _thenable(cs,single)},
+        maybeSingle:function(){return _thenable(cs,true)}
+      };
+    }
+    function _defer(m,obj){
+      return{
+        then:function(r,j){
+          let u=BASE;const fs=Object.entries(F).map(([k,v])=>`${k}=${encodeURIComponent(op(v))}`).join('&');
+          if(fs)u+='?'+fs;
+          _exec(m,u,obj).then(r).catch(j)
+        },
+        eq:(k,v)=>{F[k]=v;return _defer(m,obj)},neq:(k,v)=>{F[k]='neq.'+v;return _defer(m,obj)}
+      };
+    }
+    return {
+      select:function(cs='*'){return _thenable(cs,false)},
+      maybeSingle:function(){return _thenable('*',true)},
+      insert:async(obj)=>{try{const r=await fetch(BASE,{method:'POST',headers:H,body:JSON.stringify(obj)});return{error:r.ok?null:r.status}}catch(e){return{error:e}}},
+      update:obj=>_defer('PATCH',obj),
+      delete:()=>_defer('DELETE'),
+      upsert:async(obj)=>{try{const r=await fetch(BASE,{method:'POST',headers:{...H,Prefer:'resolution=merge-duplicates'},body:JSON.stringify(obj)});return{error:r.ok?null:r.status}}catch(e){return{error:e}}}
+    };
+  },
+  channel:(n)=>{
+    let _t,_f;const r={
+      on:(ev,cfg,cb)=>{if(cfg?.table){_t=cfg.table;const fl={};const m=cfg?.filter?.match(/^(\w+)=eq\.(.+)$/);if(m)fl[m[1]]=m[2];_f=fl;pollChan(_t,_f,p=>cb({eventType:ev,new:p.new,old:{}}))}return r},
+      subscribe:()=>{return r},
+      unsubscribe:()=>{if(_t)stopPoll(_t+':'+JSON.stringify(_f))}
+    };return r;
+  }
+};
+window.supabase=window.__sb;window.sbReady=true;
+console.log('[POKER] Supabase REST client ready');
+})();
+</script>
+
+<!-- ========== SCREEN: Login ========== -->
+<div id="screen-login" class="screen active">
+  <div class="login-logo">♠️♥️♣️♦️</div>
+  <div class="login-sub">好友德州扑克 · 纯娱乐积分</div>
+  <div class="card-box">
+    <div class="subtitle">输入昵称</div>
+    <input class="input" id="loginNick" placeholder="你的昵称..." maxlength="12" autocomplete="off">
+    <button class="btn btn-primary w-full mt-12" onclick="doLogin()">进入大厅</button>
+  </div>
+</div>
+
+<!-- ========== SCREEN: Lobby ========== -->
+<div id="screen-lobby" class="screen">
+  <div class="lobby-header">
+    <div><span class="title">大厅</span><div class="text2" id="lobbyNick">---</div></div>
+    <div style="display:flex;gap:6px;">
+      <button class="btn btn-outline" style="padding:8px 14px;font-size:13px;" onclick="showMyHistory()">📊 战绩</button>
+      <button class="btn btn-primary" style="padding:8px 14px;font-size:13px;" onclick="showCreateRoom()">＋ 开房</button>
+    </div>
+  </div>
+  <div class="subtitle">在线房间</div>
+  <div id="roomList"><div class="text-center text2" style="padding:20px;">加载中...</div></div>
+  <div class="flex-center mt-8"><button class="btn btn-outline" onclick="refreshRoomList()" style="padding:8px 16px;font-size:13px;">🔄 刷新</button></div>
+  <div class="flex" style="margin-top:8px;gap:6px;">
+    <input class="input" id="roomCodeInput" placeholder="输入房间名加入..." maxlength="20" style="flex:1;" onkeydown="if(event.key==='Enter')joinByCode()">
+    <button class="btn btn-primary" onclick="joinByCode()" style="padding:8px 16px;flex-shrink:0;">加入</button>
+  </div>
+  <div style="text-align:center;margin-top:16px;display:flex;gap:8px;justify-content:center;">
+    <button class="btn" style="background:var(--orange);color:#fff;padding:8px 16px;font-size:13px;" onclick="tryOpenAdmin()">⚙️ 管理</button>
+    <button class="btn" style="background:var(--red);color:#fff;padding:8px 16px;font-size:13px;" onclick="logout()">退出</button>
+  </div>
+</div>
+
+<!-- ========== SCREEN: Room Wait ========== -->
+<div id="screen-room" class="screen">
+  <div class="wait-header">
+    <div class="text2">房间名</div>
+    <div class="wait-code" id="roomCodeDisplay" style="cursor:pointer;" onclick="copyRoomCode()">----</div>
+    <div class="text2 mt-8" id="roomSettingDisplay">常规德州 · 固定盲注</div>
+  </div>
+  <div class="card-box">
+    <div class="flex-center" style="justify-content:space-between;">
+      <span class="text-lg">玩家列表</span>
+      <span class="text2" id="playerCountDisplay">0人</span>
+    </div>
+    <div class="player-list" id="playerList"></div>
+    <div class="bot-select flex-center" id="botControls">
+      <span class="text2">电脑玩家</span>
+      <button onclick="changeBotCount(-1)">−</button>
+      <span id="botCountDisplay">0</span>
+      <button onclick="changeBotCount(1)">+</button>
+    </div>
+  </div>
+  <button class="btn btn-green w-full" id="btnStartGame" onclick="startGame()">准备开始</button>
+  <button class="btn btn-outline w-full mt-8" onclick="leaveRoom()">退出房间</button>
+</div>
+
+<!-- ========== SCREEN: Table ========== -->
+<div id="screen-table" class="screen" style="padding:0;">
+  <div class="table-container">
+    <div class="table-felt" id="pokerTable">
+      <div class="phase-label" id="phaseLabel">等待开始...</div>
+      <div class="pot-display" id="potDisplay">底池：0</div>
+      <div class="community-area">
+        <div class="community-cards" id="communityCards">
+          <div class="community-card back"></div><div class="community-card back"></div><div class="community-card back"></div>
+          <div class="community-card back"></div><div class="community-card back"></div>
+        </div>
+      </div>
+      <div class="seat-area" id="seatArea"></div>
+    </div>
+
+    <div style="padding:4px 8px;">
+      <div class="action-bar" id="actionBar">
+        <button class="btn btn-red" onclick="pokerAction('fold')" id="btnFold">弃牌</button>
+        <button class="btn btn-outline" onclick="pokerAction('check')" id="btnCheck">过牌</button>
+        <button class="btn btn-primary" onclick="pokerAction('call')" id="btnCall">跟注</button>
+        <button class="btn btn-green" onclick="pokerAction('raise')" id="btnRaise">加注</button>
+        <button class="btn btn-orange" style="background:var(--orange);color:#fff;" onclick="pokerAction('allin')" id="btnAllin">全下</button>
+        <button class="btn btn-outline" onclick="leaveTable()" style="font-size:11px;padding:6px 8px;min-width:auto;flex:0.5;color:var(--red);border-color:var(--red);" id="btnLeaveTable">退出</button>
+      </div>
+      <div class="raise-input" id="raiseInput" style="display:none;">
+        <button class="btn btn-outline" onclick="adjustRaise(-10)" style="padding:6px 10px;font-size:16px;">−10</button>
+        <button class="btn btn-outline" onclick="adjustRaise(-100)" style="padding:6px 10px;font-size:16px;">−100</button>
+        <input class="input" id="raiseAmount" type="number" value="20" min="20" style="font-size:18px;padding:8px;text-align:center;">
+        <button class="btn btn-outline" onclick="adjustRaise(100)" style="padding:6px 10px;font-size:16px;">+100</button>
+        <button class="btn btn-outline" onclick="adjustRaise(10)" style="padding:6px 10px;font-size:16px;">+10</button>
+        <button class="btn btn-green" onclick="confirmRaise()" style="padding:6px 14px;">确认</button>
+      </div>
+      <div class="chat-area" id="chatArea">
+        <div class="chat-msgs" id="chatMessages"></div>
+        <div class="chat-input-row">
+          <input class="input" id="chatInput" placeholder="聊天..." maxlength="100" onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="btn btn-primary" onclick="sendChat()">发送</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCREEN: History ========== -->
+<div id="screen-history" class="screen">
+  <div class="flex-center" style="justify-content:space-between;margin-bottom:16px;">
+    <div class="title">📊 我的战绩</div>
+    <button class="btn btn-outline" onclick="hideMyHistory()" style="padding:6px 12px;font-size:13px;">返回</button>
+  </div>
+  <div class="card-box">
+    <div class="flex-center" style="justify-content:space-around;">
+      <div class="text-center"><div class="text-lg" id="hPoints">--</div><div class="text2">总积分</div></div>
+      <div class="text-center"><div class="text-lg" id="hGames">--</div><div class="text2">总局数</div></div>
+      <div class="text-center"><div class="text-lg" id="hEarnings">--</div><div class="text2">总盈利</div></div>
+    </div>
+  </div>
+  <div class="subtitle">最近对局</div>
+  <div id="historyList"></div>
+</div>
+
+<!-- ========== SCREEN: Admin ========== -->
+<div id="screen-admin" class="screen">
+  <div class="flex-center" style="justify-content:space-between;margin-bottom:16px;">
+    <div class="title">⚙️ 管理</div>
+    <button class="btn btn-outline" onclick="hideAdminPanel()" style="padding:6px 12px;font-size:13px;">← 返回大厅</button>
+  </div>
+  <div class="card-box">
+    <div class="subtitle">所有玩家</div>
+    <table class="admin-table">
+      <thead><tr><th>昵称</th><th>积分</th><th>局数</th><th></th></tr></thead>
+      <tbody id="adminPlayerList"></tbody>
+    </table>
+  </div>
+  <div class="card-box">
+    <div class="subtitle">房间管理</div>
+    <div id="adminRoomList"></div>
+  </div>
+</div>
+
+<!-- ========== MODAL: Create Room ========== -->
+<div class="modal-overlay" id="modal-create">
+  <div class="modal-box">
+    <div class="modal-title">创建房间</div>
+    <div class="subtitle">设置房间信息</div>
+    <div class="subtitle mt-8">房间名称</div>
+    <input class="input" id="createRoomName" placeholder="输入房间名称..." maxlength="8">
+    <div class="subtitle mt-8">玩家总数</div>
+    <div class="flex mb-8">
+      <button class="btn btn-outline" style="padding:6px 12px;font-size:13px;flex:1;" data-mp="2" onclick="selectMaxPlayers(this)">2人</button>
+      <button class="btn btn-outline" style="padding:6px 12px;font-size:13px;flex:1;" data-mp="3" onclick="selectMaxPlayers(this)">3人</button>
+      <button class="btn btn-outline" style="padding:6px 12px;font-size:13px;flex:1;" data-mp="4" onclick="selectMaxPlayers(this)">4人</button>
+      <button class="btn btn-outline" style="padding:6px 12px;font-size:13px;flex:1;" data-mp="5" onclick="selectMaxPlayers(this)">5人</button>
+      <button class="btn btn-outline" style="padding:6px 12px;font-size:13px;flex:1;" data-mp="6" onclick="selectMaxPlayers(this)">6人</button>
+    </div>
+    <div class="subtitle mt-8">游戏类型</div>
+    <div class="flex mb-8">
+      <button class="btn btn-outline" style="padding:6px 12px;font-size:13px;flex:1;" data-gametype="standard" onclick="selectGameType(this)">♠️ 常规德州</button>
+      <button class="btn btn-outline" style="padding:6px 12px;font-size:13px;flex:1;" onclick="selectGameType(this)" data-gametype="short">🔷 短牌德州</button>
+    </div>
+    <div class="subtitle">盲注结构</div>
+    <div class="flex mb-8">
+      <button class="btn btn-outline" style="padding:6px 10px;font-size:12px;" data-blind="fixed" onclick="selectBlind(this)">固定</button>
+      <button class="btn btn-outline" style="padding:6px 10px;font-size:12px;" data-blind="fast" onclick="selectBlind(this)">快速(8min)</button>
+      <button class="btn btn-outline" style="padding:6px 10px;font-size:12px;" data-blind="normal" onclick="selectBlind(this)">普通(12min)</button>
+      <button class="btn btn-outline" style="padding:6px 10px;font-size:12px;" data-blind="custom" onclick="selectBlind(this)">自定义</button>
+    </div>
+    <div class="subtitle">Bot 难度</div>
+    <div class="flex mb-12">
+      <button class="btn btn-outline" style="padding:6px 12px;font-size:13px;" data-diff="easy" onclick="selectDifficulty(this)">简单</button>
+      <button class="btn btn-outline" style="padding:6px 12px;font-size:13px;" data-diff="normal" onclick="selectDifficulty(this)">普通</button>
+      <button class="btn btn-outline" style="padding:6px 12px;font-size:13px;" data-diff="hard" onclick="selectDifficulty(this)">困难</button>
+    </div>
+    <button class="btn btn-primary w-full" onclick="createRoom()">创建房间</button>
+    <button class="btn btn-outline w-full mt-8" onclick="closeModal('modal-create')">取消</button>
+  </div>
+</div>
+
+<!-- ========== MODAL: Rules ========== -->
+<div class="modal-overlay" id="modal-rules">
+  <div class="modal-box">
+    <div class="modal-title" id="rulesTitle">📖 游戏规则</div>
+    <div id="rulesContent">
+      <div class="rule-section"><h3>🎯 目标</h3><p>组合最好的 5 张牌，赢下底池</p></div>
+      <div class="rule-section"><h3>🃏 牌型大小</h3><p>皇家同花顺 > 同花顺 > 四条 > 葫芦 > 同花 > 顺子 > 三条 > 两对 > 一对 > 高牌</p></div>
+      <div class="rule-section"><h3>📋 游戏流程</h3><p>每人发 2 张底牌 → 翻牌(3张) → 转牌(1张) → 河牌(1张) → 摊牌比大小</p></div>
+      <div class="rule-section"><h3>⏱️ 行动时限</h3><p>每人 60 秒，超时自动弃牌</p></div>
+    </div>
+    <button class="btn btn-primary w-full mt-12" onclick="closeModal('modal-rules')">知道了</button>
+  </div>
+</div>
+
+<!-- ========== MODAL: Result ========== -->
+<div class="modal-overlay" id="modal-result">
+  <div class="modal-box">
+    <div class="modal-title text-center" id="resultTitle">🎉 牌局结束</div>
+    <div id="resultContent"></div>
+    <div class="flex mt-12" style="justify-content:center;gap:8px;">
+      <button class="btn btn-primary" onclick="nextHand()">下一局</button>
+      <button class="btn btn-outline" onclick="closeModal('modal-result');leaveRoom()">离开</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== Global Variables ====================
+const ADMIN_PWD='592406';
+let __nickname='';
+let __isAdmin=false;
+let __roomCode='';
+let __gameType='standard';
+let __blind='fixed';
+let __blindMin=10;
+let __botDiff='normal';
+let __botCount=0;
+let __maxPlayers=6;
+let __roomName='';
+let __matchHistory=[];
+let __allPlayersData=[];
+
+// ==================== Setup Check ====================
+async function ensureTables(){
+  const {error}=await supabase.from('poker_rooms').select('room_code').limit(1);
+  if(error&&error.code==='42P01'){
+    showToast('⚠️ 数据库未初始化，请在 Supabase SQL 编辑器运行以下 SQL：');
+    alert('需要先初始化数据库！\n\n打开 Supabase 控制台 → SQL 编辑器，运行以下语句：\n\n（创建表语句见 HTML 顶部注释，或联系开发者）');
+    return false;
+  }
+  return true;
+}
+
+// ==================== Card Utilities ====================
+const SUITS=['♠','♥','♣','♦'];
+const RANKS=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+const SHORT_RANKS=['6','7','8','9','10','J','Q','K','A'];
+
+function createDeck(isShort){
+  const ranks=isShort?SHORT_RANKS:RANKS;
+  const deck=[];
+  for(const s of SUITS)for(const r of ranks)deck.push(r+s);
+  return deck;
+}
+function shuffleDeck(deck){
+  for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]]}
+  return deck;
+}
+function cardRank(c){return c.slice(0,-1)}
+function cardSuit(c){return c.slice(-1)}
+function isRed(c){return c.includes('♥')||c.includes('♦')}
+function rankValue(r,isShort){const ranks=isShort?SHORT_RANKS:RANKS;const idx=ranks.indexOf(r);return idx>=0?idx+2:(r==='A'?14:r==='K'?13:r==='Q'?12:r==='J'?11:10)}
+
+// ==================== Hand Evaluation ====================
+function evaluateHand(cards,isShort){
+  if(cards.length<5)return{rank:0,name:'',kickers:[]};
+  const sorted=cards.map(c=>({r:cardRank(c),s:cardSuit(c),v:rankValue(cardRank(c),isShort)})).sort((a,b)=>b.v-a.v);
+  const flushSuit=sorted.find(c=>sorted.filter(x=>x.s===c.s).length>=5);
+  const flush=flushSuit?sorted.filter(c=>c.s===flushSuit.s).slice(0,5):null;
+  const counts={};sorted.forEach(c=>{counts[c.r]=(counts[c.r]||0)+1});
+  const groups=Object.entries(counts).map(([r,c])=>({r,v:rankValue(r,isShort),c})).sort((a,b)=>b.c-a.c||b.v-a.v);
+  const isShortDeck=isShort;
+  // Straights
+  const uniqueVals=[...new Set(sorted.map(c=>c.v))].sort((a,b)=>b-a);
+  let straight=null;
+  for(let i=0;i<=uniqueVals.length-5;i++){
+    if(uniqueVals[i]-uniqueVals[i+4]===4){straight=uniqueVals.slice(i,i+5);break}
+  }
+  // A-6-7-8-9 short deck straight
+  if(!straight&&isShortDeck&&uniqueVals.includes(14)&&uniqueVals.includes(6)&&uniqueVals.includes(7)&&uniqueVals.includes(8)&&uniqueVals.includes(9)){
+    straight=[6,7,8,9,14];
+  }
+  // A-2-3-4-5 straight
+  if(!straight&&uniqueVals.includes(14)&&uniqueVals.includes(2)&&uniqueVals.includes(3)&&uniqueVals.includes(4)&&uniqueVals.includes(5)){
+    straight=[14,2,3,4,5];
+  }
+  const straightFlush=flush&&straight?flush.filter(c=>straight.includes(c.v)).slice(0,5):null;
+  if(straightFlush&&straightFlush.length>=5){
+    if(straightFlush[0].v===14&&straightFlush[4].v===10)return{rank:10,name:'皇家同花顺',kickers:[14]};
+    return{rank:9,name:'同花顺',kickers:[straightFlush[0].v]};
+  }
+  if(groups[0].c===4)return{rank:8,name:'四条',kickers:[groups[0].v,groups[1]?.v||0]};
+  if(groups[0].c===3&&groups[1]?.c===2)return{rank:7,name:'葫芦',kickers:[groups[0].v,groups[1].v]};
+  // For short deck: flush > full house
+  if(flush){
+    if(isShortDeck&&groups[0].c===3&&groups[1]?.c===2){
+      // Short deck: flush ranks higher than full house
+      // Full house is rank 6, flush is rank 7
+      return{rank:6,name:'葫芦',kickers:[groups[0].v,groups[1].v]};
+    }
+    return{rank:isShortDeck?7:6,name:'同花',kickers:flush.map(c=>c.v)};
+  }
+  if(groups[0].c===3&&groups[1]?.c===2)return{rank:7,name:'葫芦',kickers:[groups[0].v,groups[1].v]};
+  if(straight)return{rank:5,name:'顺子',kickers:[straight[0]]};
+  if(groups[0].c===3)return{rank:4,name:'三条',kickers:[groups[0].v,...groups.slice(1,3).map(g=>g.v)]};
+  if(groups[0].c===2&&groups[1]?.c===2)return{rank:3,name:'两对',kickers:[groups[0].v,groups[1].v,groups[2]?.v||0]};
+  if(groups[0].c===2)return{rank:2,name:'一对',kickers:[groups[0].v,...groups.slice(1,4).map(g=>g.v)]};
+  return{rank:1,name:'高牌',kickers:sorted.slice(0,5).map(c=>c.v)};
+}
+
+function compareHands(h1,h2){
+  if(h1.rank!==h2.rank)return h1.rank-h2.rank;
+  for(let i=0;i<Math.min(h1.kickers.length,h2.kickers.length);i++){
+    if(h1.kickers[i]!==h2.kickers[i])return h1.kickers[i]-h2.kickers[i];
+  }
+  return 0;
+}
+
+function bestHand(cards,isShort){
+  if(cards.length<5)return{rank:0,name:'',kickers:[]};
+  let best=null;
+  for(let i=0;i<cards.length;i++)for(let j=i+1;j<cards.length;j++)for(let k=j+1;k<cards.length;k++)for(let l=k+1;l<cards.length;l++)for(let m=l+1;m<cards.length;m++){
+    const hand=evaluateHand([cards[i],cards[j],cards[k],cards[l],cards[m]],isShort);
+    if(!best||compareHands(hand,best)>0)best=hand;
+  }
+  return best||evaluateHand(cards.slice(0,5),isShort);
+}
+
+// ==================== Bot AI ====================
+function getBotAction(state,nick,difficulty){
+  const me=state.players.find(p=>p.nickname===nick);
+  if(!me||me.folded||me.allIn)return null;
+  const hole=me.holeCards||[];
+  const community=state.communityCards||[];
+  let handStrength=0.5; // 0-1
+  if(hole.length===2){
+    const r1=rankValue(cardRank(hole[0]),state.gameType==='short');
+    const r2=rankValue(cardRank(hole[1]),state.gameType==='short');
+    const paired=cardRank(hole[0])===cardRank(hole[1]);
+    const suited=cardSuit(hole[0])===cardSuit(hole[1]);
+    const high=(r1>=12||r2>=12);
+    const ace=hole.some(c=>cardRank(c)==='A');
+    handStrength=paired?0.7+(r1/50):suited?0.4+(Math.max(r1,r2)/40):0.3+(Math.max(r1,r2)/50);
+    if(ace&&suited)handStrength+=0.15;
+    if(ace&&r2>=11)handStrength+=0.1;
+  }
+  if(community.length>0){
+    const allCards=[...hole,...community];
+    const hand=bestHand(allCards,state.gameType==='short');
+    handStrength=hand.rank/10;
+  }
+  const difficultyFactor=difficulty==='hard'?1.1:difficulty==='normal'?1:0.9;
+  handStrength=Math.min(1,handStrength*difficultyFactor);
+  const toCall=state.currentBet-me.currentBet;
+  const pot=state.pots.reduce((s,p)=>s+p.amount,0);
+  const minRaise=Math.max(state.minBet||20,state.currentBet*2);
+  const random=Math.random();
+  const adjusted=handStrength*(1+random*0.2-0.1);
+  if(adjusted<0.25){
+    if(toCall===0)return{action:'check',amount:0};
+    if(toCall<=state.minBet/2&&random<0.3)return{action:'call',amount:toCall};
+    return{action:'fold',amount:0};
+  }
+  if(adjusted<0.5){
+    if(toCall===0)return{action:'check',amount:0};
+    return{action:'call',amount:toCall};
+  }
+  if(adjusted<0.7){
+    if(toCall===0){
+      if(random<0.3&&pot>0)return{action:'raise',amount:minRaise};
+      return{action:'check',amount:0};
+    }
+    return{action:'call',amount:toCall};
+  }
+  if(adjusted<0.85){
+    if(random<0.4&&me.chips>minRaise*2)return{action:'raise',amount:Math.min(minRaise*2,me.chips)};
+    return{action:'call',amount:toCall};
+  }
+  if(random<0.5)return{action:'raise',amount:Math.min(minRaise*3,me.chips)};
+  return{action:'allin',amount:me.chips};
+}
+
+// ==================== Supabase Operations ====================
+async function getPlayer(nick){
+  const {data}=await supabase.from('poker_players').select('*').eq('nickname',nick).maybeSingle();
+  return data;
+}
+async function ensurePlayer(nick){
+  let p=await getPlayer(nick);
+  if(!p){
+    await supabase.from('poker_players').insert({nickname:nick,points:5000,games_played:0,total_earnings:0});
+    p=await getPlayer(nick);
+  }
+  return p;
+}
+async function updatePlayerPoints(nick,delta,addGame){
+  const p=await getPlayer(nick);
+  if(!p)return;
+  const updates={points:Math.max(0,(p.points||5000)+delta)};
+  if(addGame){updates.games_played=(p.games_played||0)+1;updates.total_earnings=(p.total_earnings||0)+delta}
+  await supabase.from('poker_players').update(updates).eq('nickname',nick);
+}
+
+// ==================== Screen Management ====================
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById('screen-'+id);
+  if(el)el.classList.add('active');
+}
+function showModal(id){document.getElementById(id).classList.add('active')}
+function closeModal(id){document.getElementById(id).classList.remove('active')}
+
+function showToast(msg){
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;
+  document.body.appendChild(t);setTimeout(()=>t.remove(),2000);
+}
+
+// ==================== Audio ====================
+let soundEnabled=true;
+try{
+  soundEnabled=localStorage.getItem('poker_sound')!=='0';
+  document.getElementById('soundToggle').textContent=soundEnabled?'🔊':'🔇';
+}catch(e){}
+
+function playSound(type){
+  if(!soundEnabled)return;
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.connect(gain);gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(0.08,ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);
+    if(type==='deal'){osc.type='triangle';osc.frequency.setValueAtTime(800,ctx.currentTime);osc.frequency.exponentialRampToValueAtTime(400,ctx.currentTime+0.1)}
+    else if(type==='chip'){osc.type='square';osc.frequency.setValueAtTime(600,ctx.currentTime)}
+    else if(type==='win'){osc.type='sine';osc.frequency.setValueAtTime(523,ctx.currentTime);osc.frequency.setValueAtTime(659,ctx.currentTime+0.15);osc.frequency.setValueAtTime(784,ctx.currentTime+0.3)}
+    else if(type==='fold'){osc.type='sawtooth';osc.frequency.setValueAtTime(300,ctx.currentTime);osc.frequency.exponentialRampToValueAtTime(100,ctx.currentTime+0.2)}
+    else if(type==='dealerspeak'){osc.type='sine';osc.frequency.setValueAtTime(440,ctx.currentTime);osc.frequency.setValueAtTime(550,ctx.currentTime+0.2)}
+    osc.start(ctx.currentTime);osc.stop(ctx.currentTime+0.3);
+  }catch(e){}
+}
+document.getElementById('soundToggle').onclick=()=>{
+  soundEnabled=!soundEnabled;
+  localStorage.setItem('poker_sound',soundEnabled?'1':'0');
+  document.getElementById('soundToggle').textContent=soundEnabled?'🔊':'🔇';
+};
+
+// ==================== Login ====================
+function doLogin(){
+  const nick=document.getElementById('loginNick').value.trim();
+  if(!nick||nick.length<1){showToast('请输入昵称');return}
+  if(nick===ADMIN_PWD){showToast('昵称不可用');return}
+  __nickname=nick;
+  localStorage.setItem('poker_nickname',nick);
+  // 先切界面（同步执行，不依赖网络）
+  showScreen('lobby');
+  document.getElementById('lobbyNick').textContent='👤 '+nick;
+  refreshRoomList();
+  startRoomListSync();
+  // 后台同步 Supabase（失败不影响登录）
+  ensurePlayer(nick).catch(e=>console.warn('[POKER] Sync fail:',e));
+}
+function tryOpenAdmin(){
+  if(__nickname!=='灿总'){showToast('仅管理员可访问');return}
+  __isAdmin=true;
+  loadAdminPanel();
+}
+function logout(){__nickname='';__isAdmin=false;showScreen('login');document.getElementById('loginNick').value='';stopRoomListSync()}
+
+// ==================== Admin ====================
+async function loadAdminPanel(){
+  try{
+    const {data}=await supabase.from('poker_players').select('*').order('points',{ascending:false});
+    __allPlayersData=data||[];
+    const tbody=document.getElementById('adminPlayerList');
+    tbody.innerHTML=(data||[]).map(p=>`<tr><td>${p.nickname}</td><td>${p.points}</td><td>${p.games_played||0}</td><td><span class="admin-del" onclick="deletePlayer('${p.nickname}')">删除</span></td></tr>`).join('');
+  }catch(e){showToast('加载失败')}
+  // Load rooms
+  try{
+    const {data:rooms}=await supabase.from('poker_rooms').select('*').order('created_at',{ascending:false});
+    const rl=document.getElementById('adminRoomList');
+    if(!rooms||rooms.length===0){
+      rl.innerHTML='<div class="text2">暂无房间</div>';
+    }else{
+      rl.innerHTML=rooms.map(r=>{
+        const p=(r.players||[]).length;
+        return `<div class="room-item" style="cursor:default">
+          <div><div class="room-code">${r.room_code}</div><div class="room-info">${r.status} · ${p}人 · ${r.host_nickname}</div></div>
+          <button class="admin-del" onclick="adminDeleteRoom('${r.room_code}')">删除</button>
+        </div>`;
+      }).join('');
+    }
+  }catch(e){console.error(e)}
+  showScreen('admin');
+}
+async function deletePlayer(nick){
+  if(!confirm(`确定删除玩家 ${nick} 所有数据？`))return;
+  await supabase.from('poker_players').delete().eq('nickname',nick);
+  showToast('已删除 '+nick);
+  loadAdminPanel();
+}
+async function adminDeleteRoom(code){
+  if(!confirm(`确定删除房间 ${code}？`))return;
+  await supabase.from('poker_rooms').delete().eq('room_code',code);
+  await supabase.from('poker_game_states').delete().eq('room_code',code);
+  showToast('已删除房间');
+  loadAdminPanel();
+}
+function hideAdminPanel(){__isAdmin=false;showScreen('lobby')}
+
+// ==================== Lobby ====================
+let _roomSyncInterval=null;
+function startRoomListSync(){
+  stopRoomListSync();
+  _roomSyncInterval=setInterval(refreshRoomList,5000);
+}
+function stopRoomListSync(){if(_roomSyncInterval){clearInterval(_roomSyncInterval);_roomSyncInterval=null}}
+
+async function refreshRoomList(){
+  let data;
+  try{
+    const res=await supabase.from('poker_rooms').select('*').neq('status','finished').order('created_at',{ascending:false}).limit(20);
+    data=res.data;
+  }catch(e){document.getElementById('roomList').innerHTML='<div class="text-center text2" style="padding:20px;">⚠️ 加载失败</div>';return}
+  const list=document.getElementById('roomList');
+  if(!data||data.length===0){
+    list.innerHTML='<div class="text-center text2" style="padding:20px;">暂无房间，点击上方开房</div>';
+    return;
+  }
+  list.innerHTML=data.filter(r=>r.status!=='finished').map(r=>{
+    const players=r.players||[];
+    const count=players.length||0;
+    const mp=r.max_players||6;
+    return `<div class="room-item" onclick="joinRoom('${r.room_code}')">
+      <div><div class="room-code">${r.room_code}</div><div class="room-info">${r.game_type==='short'?'短牌':'常规'} · ${count}/${mp}人 · ${r.host_nickname}</div></div>
+      <button class="room-join">加入</button>
+    </div>`;
+  }).join('');
+}
+
+// ==================== Create / Join Room ====================
+let _createGametype='standard',_createBlind='fixed',_createDiff='normal';
+function selectGameType(el){
+  document.querySelectorAll('[data-gametype]').forEach(b=>b.style.borderColor='');
+  el.style.borderColor='var(--primary)';el.style.background='rgba(0,122,255,0.1)';
+}
+function selectBlind(el){
+  document.querySelectorAll('[data-blind]').forEach(b=>{b.style.borderColor='';b.style.background=''});
+  el.style.borderColor='var(--primary)';el.style.background='rgba(0,122,255,0.1)';
+  document.getElementById('customBlindInput').style.display=el.dataset.blind==='custom'?'':'none';
+}
+function selectDifficulty(el){
+  document.querySelectorAll('[data-diff]').forEach(b=>{b.style.borderColor='';b.style.background=''});
+  el.style.borderColor='var(--primary)';el.style.background='rgba(0,122,255,0.1)';
+}
+function selectMaxPlayers(el){
+  document.querySelectorAll('[data-mp]').forEach(b=>{b.style.borderColor='';b.style.background=''});
+  el.style.borderColor='var(--primary)';el.style.background='rgba(0,122,255,0.1)';
+}
+function showCreateRoom(){showModal('modal-create')}
+
+async function createRoom(){
+  let roomName=document.getElementById('createRoomName').value.trim();
+  if(!roomName)roomName=Math.floor(1000+Math.random()*9000).toString();
+  // Read selected values from modal
+  let gameType='standard',blind='fixed',diff='normal',mp=6;
+  document.querySelectorAll('#modal-create [data-gametype]').forEach(el=>{
+    if(el.style.borderColor)gameType=el.dataset.gametype;
+  });
+  document.querySelectorAll('#modal-create [data-blind]').forEach(el=>{
+    if(el.style.borderColor)blind=el.dataset.blind;
+  });
+  document.querySelectorAll('#modal-create [data-diff]').forEach(el=>{
+    if(el.style.borderColor)diff=el.dataset.diff;
+  });
+  document.querySelectorAll('#modal-create [data-mp]').forEach(el=>{
+    if(el.style.borderColor)mp=parseInt(el.dataset.mp);
+  });
+  const room={room_code:roomName,host_nickname:__nickname,game_type:gameType,blind_structure:blind,bot_difficulty:diff,max_players:mp,status:'waiting',players:JSON.stringify([__nickname])};
+  try{
+    await supabase.from('poker_rooms').insert(room);
+    closeModal('modal-create');
+    __roomCode=roomName;__gameType=gameType;__blind=blind;__botDiff=diff;__maxPlayers=mp;__roomName=roomName;
+    showScreen('room');
+    initRoom();
+  }catch(e){
+    if(e&&e.status===409)showToast('房间名已存在，请换一个');
+    else showToast('创建失败');
+    console.error(e)
+  }
+}
+
+async function joinRoom(code){
+  if(code===__roomCode){showScreen('room');initRoom();return}
+  const {data}=await supabase.from('poker_rooms').select('*').eq('room_code',code).maybeSingle();
+  if(!data){showToast('房间不存在');return}
+  if(data.status==='playing'){showToast('游戏中，暂不可加入');return}
+  const players=data.players||[];
+  if(players.includes(__nickname)){showToast('已在房间中');__roomCode=code;showScreen('room');initRoom();return}
+  const mp=data.max_players||6;
+  if(players.length>=mp){showToast('房间已满');return}
+  players.push(__nickname);
+  await supabase.from('poker_rooms').update({players:JSON.stringify(players)}).eq('room_code',code);
+  __roomCode=code;
+  __roomName=code;
+  __gameType=data.game_type||'standard';
+  __blind=data.blind_structure||'fixed';
+  __botDiff=data.bot_difficulty||'normal';
+  __maxPlayers=data.max_players||6;
+  showScreen('room');
+  initRoom();
+}
+
+// ==================== Room Wait ====================
+let _roomSub=null;
+function initRoom(){
+  document.getElementById('roomCodeDisplay').textContent=__roomName||__roomCode;
+  loadRoomData();
+  if(_roomSub)_roomSub.unsubscribe();
+  _roomSub=supabase.channel('room-'+__roomCode)
+    .on('postgres_changes',{event:'*',schema:'public',table:'poker_rooms',filter:`room_code=eq.${__roomCode}`},()=>loadRoomData())
+    .subscribe();
+}
+async function loadRoomData(){
+  const {data}=await supabase.from('poker_rooms').select('*').eq('room_code',__roomCode).maybeSingle();
+  if(!data)return;
+  const players=data.players||[];
+  const mp=data.max_players||6;
+  const isHost=data.host_nickname===__nickname;
+  document.getElementById('playerCountDisplay').textContent=players.length+'/'+mp+'人';
+  document.getElementById('roomSettingDisplay').textContent=(data.game_type==='short'?'短牌德州':'常规德州')+' · '+(data.blind_structure==='fixed'?'固定盲注':data.blind_structure+'盲注');
+  const list=document.getElementById('playerList');
+  list.innerHTML=players.map(n=>`<div class="player-chip"><div class="avatar">${n[0]}</div><div>${n}${n===data.host_nickname?' <span class="is-host">👑房主</span>':''}</div></div>`).join('');
+  const botEl=document.getElementById('botControls');
+  botEl.style.display=isHost?'flex':'none';
+  document.getElementById('btnStartGame').style.display=isHost?'':'none';
+  if(!isHost)document.getElementById('btnStartGame').textContent='等待房主开始...';
+  if(data.status==='playing'){startGameAlready(data);}
+}
+function changeBotCount(delta){
+  const maxBot=__maxPlayers-1;
+  __botCount=Math.max(0,Math.min(maxBot,__botCount+delta));
+  document.getElementById('botCountDisplay').textContent=__botCount;
+}
+
+async function startGame(){
+  const players=await getRoomPlayers();
+  const allPlayers=[...players];
+  // Add bots
+  const botNames=['🤖 Alpha','🤖 Beta','🤖 Gamma','🤖 Delta','🤖 Epsilon','🤖 Omega'];
+  for(let i=0;i<__botCount&&allPlayers.length<__maxPlayers;i++){
+    allPlayers.push(botNames[i]);
+  }
+  if(allPlayers.length<2){showToast('至少需要2名玩家');return}
+  // Use stored settings from room creation
+  const gt=__gameType;
+  const blind=__blind;
+  const diff=__botDiff;
+  let blindMin=__blindMin||10;
+  await supabase.from('poker_rooms').update({status:'playing',game_type:gt,blind_structure:blind,bot_difficulty:diff}).eq('room_code',__roomCode);
+  showScreen('table');
+  initGameState(allPlayers);
+}
+
+async function startGameAlready(data){
+  showScreen('table');
+  // Load game state and render
+  loadGameState();
+}
+
+async function getRoomPlayers(){
+  const {data}=await supabase.from('poker_rooms').select('players').eq('room_code',__roomCode).maybeSingle();
+  return data?.players||[];
+}
+
+async function leaveTable(){
+  if(!confirm('确定退出当前游戏？'))return;
+  if(_gameSub){_gameSub.unsubscribe();_gameSub=null}
+  if(_turnTimer){clearTimeout(_turnTimer);_turnTimer=null}
+  __gameState=null;
+  await leaveRoom();
+}
+async function leaveRoom(){
+  if(_roomSub){_roomSub.unsubscribe();_roomSub=null}
+  // Remove self from players
+  const {data}=await supabase.from('poker_rooms').select('players,host_nickname').eq('room_code',__roomCode).maybeSingle();
+  if(data){
+    let players=data.players||[];
+    if(data.host_nickname===__nickname){
+      await supabase.from('poker_rooms').update({status:'finished'}).eq('room_code',__roomCode);
+    }else{
+      players=players.filter(n=>n!==__nickname);
+      await supabase.from('poker_rooms').update({players:JSON.stringify(players)}).eq('room_code',__roomCode);
+    }
+  }
+  __roomCode='';
+  showScreen('lobby');
+  refreshRoomList();
+}
+
+function copyRoomCode(){
+  const code=__roomCode;
+  if(navigator.clipboard){navigator.clipboard.writeText(code).then(()=>showToast('已复制: '+code)).catch(()=>{})}
+  else showToast('房间名: '+code);
+}
+function joinByCode(){
+  const code=document.getElementById('roomCodeInput').value.trim();
+  if(!code){showToast('请输入房间名');return}
+  joinRoom(code);
+}
+
+// ==================== Game State ====================
+let _gameState=null;
+let _gameSub=null;
+let _turnTimer=null;
+
+async function initGameState(allPlayers){
+  const deck=shuffleDeck(createDeck(__gameType==='short'));
+  const playerStates=allPlayers.map((n,i)=>({
+    nickname:n,holeCards:[deck[i*2],deck[i*2+1]],chips:5000,currentBet:0,
+    folded:false,allIn:false,isConnected:true,
+    isBot:n.startsWith('🤖'),botDifficulty:n.startsWith('🤖')?__botDiff:'none'
+  }));
+  const state={
+    deck:deck.slice(allPlayers.length*2),communityCards:[],phase:'preflop',
+    pots:[{amount:0,eligiblePlayers:allPlayers.map(p=>p)}],
+    players:playerStates,currentPlayerIndex:0,dealerIndex:0,
+    currentBet:0,minBet:20,lastAction:'',roundStartTime:Date.now(),
+    gameType:__gameType,blindStructure:__blind,blindMinutes:__blindMin,
+    blindLevel:0,handCount:0,actionLog:[]
+  };
+  // Post blinds
+  const sbIdx=nextActiveIndex(state,-1,state.dealerIndex);
+  const bbIdx=nextActiveIndex(state,-1,sbIdx);
+  if(sbIdx>=0){state.players[sbIdx].chips-=5;state.players[sbIdx].currentBet=5;state.pots[0].amount+=5}
+  if(bbIdx>=0){state.players[bbIdx].chips-=10;state.players[bbIdx].currentBet=10;state.currentBet=10}
+  state.currentPlayerIndex=nextActiveIndex(state,-1,bbIdx);
+  state.roundStartTime=Date.now();
+  __gameState=state;
+  await saveGameState();
+  startGameSync();
+  renderTable();
+  startTurnTimer();
+}
+
+function nextActiveIndex(state,from,startIdx){
+  const players=state.players;
+  const n=players.length;
+  for(let i=1;i<=n;i++){
+    const idx=(startIdx!==undefined?(startIdx+i)%n:(from!==undefined&&from>=0?(from+i)%n:i));
+    if(!players[idx].folded&&!players[idx].allIn&&players[idx].chips>0)return idx;
+  }
+  return -1;
+}
+
+function getActivePlayers(state){
+  return state.players.filter(p=>!p.folded&&!p.allIn);
+}
+
+function allActionsComplete(state){
+  const active=getActivePlayers(state);
+  if(active.length<=1)return true;
+  return active.every(p=>p.currentBet===state.currentBet||p.allIn);
+}
+
+async function saveGameState(){
+  if(!__gameState)return;
+  const state=JSON.parse(JSON.stringify(__gameState));
+  // Don't send raw deck to hide future cards (but for friend game it's ok)
+  await supabase.from('poker_game_states').upsert({
+    room_code:__roomCode,game_id:__gameState.handCount||0,
+    state:state,version:(__gameState._version||0)+1,
+    updated_at:new Date().toISOString()
+  },{onConflict:'room_code'});
+  __gameState._version=(__gameState._version||0)+1;
+}
+
+function startGameSync(){
+  if(_gameSub)_gameSub.unsubscribe();
+  _gameSub=supabase.channel('game-'+__roomCode)
+    .on('postgres_changes',{event:'*',schema:'public',table:'poker_game_states',filter:`room_code=eq.${__roomCode}`},payload=>{
+      if(payload.new&&payload.new.state){
+        const newState=payload.new.state;
+        if((newState._version||0)>(__gameState?._version||0)){
+          __gameState=newState;
+          renderTable();
+          startTurnTimer();
+        }
+      }
+    })
+    .subscribe();
+}
+
+async function loadGameState(){
+  const {data}=await supabase.from('poker_game_states').select('state').eq('room_code',__roomCode).maybeSingle();
+  if(data&&data.state){__gameState=data.state;renderTable();startTurnTimer();startGameSync()}
+}
+
+// ==================== Turn Timer ====================
+function startTurnTimer(){
+  if(_turnTimer)clearTimeout(_turnTimer);
+  if(!__gameState||__gameState.phase==='showdown'||__gameState.phase==='idle')return;
+  const currentPlayer=__gameState.players[__gameState.currentPlayerIndex];
+  if(!currentPlayer||currentPlayer.folded||currentPlayer.allIn||currentPlayer.isBot)return;
+  if(!currentPlayer.isBot){_turnTimer=setTimeout(()=>{pokerAction('fold')},60000)}
+}
+
+// Auto-play bot turns
+async function checkBotTurn(){
+  if(!__gameState||__gameState.phase==='showdown'||__gameState.phase==='idle')return;
+  const idx=__gameState.currentPlayerIndex;
+  const player=__gameState.players[idx];
+  if(!player||!player.isBot||player.folded||player.allIn)return;
+  const action=getBotAction(__gameState,player.nickname,player.botDifficulty);
+  if(action){
+    await processAction(idx,action.action,action.amount);
+  }
+}
+
+// ==================== Player Actions ====================
+async function pokerAction(action){
+  if(!__gameState)return;
+  const me=__gameState.players.findIndex(p=>p.nickname===__nickname);
+  if(me<0||me!==__gameState.currentPlayerIndex){showToast('还没轮到你');return}
+  const player=__gameState.players[me];
+  if(player.folded||player.allIn)return;
+  const toCall=__gameState.currentBet-player.currentBet;
+  let amount=0;
+  if(action==='fold'){/* amount stays 0 */}
+  else if(action==='check'){
+    if(toCall>0){showToast('不能过牌，请跟注或加注');return}
+  }
+  else if(action==='call'){
+    if(toCall===0){showToast('不需要跟注');return}
+    amount=Math.min(toCall,player.chips);
+  }
+  else if(action==='raise'){
+    const minRaise=Math.max(__gameState.minBet||20,__gameState.currentBet*2);
+    document.getElementById('raiseInput').style.display='flex';
+    document.getElementById('raiseAmount').value=minRaise;
+    document.getElementById('raiseAmount').min=minRaise;
+    return; // Wait for confirm raise
+  }
+  else if(action==='allin'){amount=player.chips}
+  await processAction(me,action,amount);
+}
+
+async function confirmRaise(){
+  const amount=parseInt(document.getElementById('raiseAmount').value)||0;
+  const me=__gameState.players.findIndex(p=>p.nickname===__nickname);
+  const player=__gameState.players[me];
+  const minRaise=Math.max(__gameState.minBet||20,__gameState.currentBet*2);
+  if(amount<minRaise&&amount<player.chips){showToast('加注最少 '+minRaise);return}
+  document.getElementById('raiseInput').style.display='none';
+  await processAction(me,'raise',Math.min(amount,player.chips));
+}
+function adjustRaise(delta){
+  const el=document.getElementById('raiseAmount');
+  el.value=Math.max(parseInt(el.min)||20,parseInt(el.value)+delta);
+}
+
+async function processAction(idx,action,amount){
+  if(!__gameState||idx<0)return;
+  const player=__gameState.players[idx];
+  const state=__gameState;
+  // Execute action
+  if(action==='fold'){player.folded=true;playSound('fold');addActionLog(player.nickname,'弃牌')}
+  else if(action==='check'){addActionLog(player.nickname,'过牌')}
+  else if(action==='call'){
+    const callAmt=Math.min(amount,player.chips);
+    player.chips-=callAmt;player.currentBet+=callAmt;state.pots[0].amount+=callAmt;
+    if(player.chips===0)player.allIn=true;
+    playSound('chip');addActionLog(player.nickname,'跟注 '+callAmt)
+  }
+  else if(action==='raise'||action==='allin'){
+    const raiseAmt=Math.min(amount,player.chips);
+    const toCall=state.currentBet-player.currentBet;
+    const totalPut=Math.min(raiseAmt+toCall,player.chips+player.currentBet); // Actually raise amount includes call
+    // Recalculate: amount is total put
+    const putAmt=Math.min(amount,player.chips);
+    player.chips-=putAmt;player.currentBet+=putAmt;state.pots[0].amount+=putAmt;
+    state.currentBet=player.currentBet;
+    if(player.chips===0)player.allIn=true;
+    playSound('chip');
+    addActionLog(player.nickname,(action==='allin'?'全下 ':'加注 ')+putAmt);
+  }
+  // Move to next player
+  const nextIdx=nextActiveIndex(state,idx);
+  if(nextIdx<0||allActionsComplete(state)){
+    await advancePhase(state);
+  }else{
+    state.currentPlayerIndex=nextIdx;
+    state.roundStartTime=Date.now();
+  }
+  // Save
+  await saveGameState();
+  renderTable();
+  if(_turnTimer)clearTimeout(_turnTimer);
+  startTurnTimer();
+  // Check bot turns
+  setTimeout(checkBotTurn,1000);
+}
+
+function addActionLog(nick,action){
+  if(!__gameState)return;
+  if(!__gameState.actionLog)__gameState.actionLog=[];
+  __gameState.actionLog.push(nick+': '+action);
+  // Dealer speak
+  speakDealer('🎤 '+nick+'，'+action);
+}
+
+function speakDealer(text){
+  addChatMessage('🎤 荷官',text,'dealer');
+  // Voice
+  if(soundEnabled){
+    try{
+      if('speechSynthesis'in window){
+        const u=new SpeechSynthesisUtterance(text.split('，')[0]+'，请行动');
+        u.lang='zh-CN';u.rate=1.1;u.pitch=0.9;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(u);
+      }
+    }catch(e){}
+  }
+}
+
+async function advancePhase(state){
+  const active=getActivePlayers(state);
+  if(active.length<=1){
+    // One player left, they win
+    await showdown(state);
+    return;
+  }
+  // Reset bets for next phase
+  state.players.forEach(p=>{p.currentBet=0});
+  state.currentBet=0;
+  const phaseOrder=['preflop','flop','turn','river','showdown'];
+  const currentIdx=phaseOrder.indexOf(state.phase);
+  if(currentIdx<0||currentIdx>=4){
+    await showdown(state);return;
+  }
+  const nextPhase=phaseOrder[currentIdx+1];
+  state.phase=nextPhase;
+  // Deal community cards
+  if(nextPhase==='flop'){
+    if(state.deck.length>=3){state.communityCards.push(...state.deck.splice(0,3));playSound('deal')}
+  }else if(nextPhase==='turn'){
+    if(state.deck.length>=1){state.communityCards.push(state.deck.shift());playSound('deal')}
+  }else if(nextPhase==='river'){
+    if(state.deck.length>=1){state.communityCards.push(state.deck.shift());playSound('deal')}
+  }
+  // Reset current player to first active after dealer
+  let startIdx=nextActiveIndex(state,-1,state.dealerIndex);
+  state.currentPlayerIndex=startIdx>=0?startIdx:0;
+  state.roundStartTime=Date.now();
+  addActionLog('','--- '+nextPhase.toUpperCase()+' ---');
+  if(nextPhase==='showdown')await showdown(state);
+}
+
+async function showdown(state){
+  state.phase='showdown';
+  playSound('win');
+  const allCards=state.communityCards||[];
+  const results=state.players.filter(p=>!p.folded).map(p=>{
+    const cards=[...p.holeCards,...allCards];
+    const hand=bestHand(cards,state.gameType==='short');
+    return{...p,hand};
+  });
+  results.sort((a,b)=>compareHands(b.hand,a.hand));
+  const winner=results[0];
+  const totalPot=state.pots.reduce((s,p)=>s+p.amount,0);
+  // Update chips
+  const winnerIdx=state.players.findIndex(p=>p.nickname===winner.nickname);
+  if(winnerIdx>=0)state.players[winnerIdx].chips+=totalPot;
+  // Show result
+  const resultHTML=results.map((r,i)=>{
+    const prefix=i===0?'🏆 ':'';
+    const earned=i===0?'+'+totalPot:r.folded?'-'+r.currentBet:'-'+r.currentBet;
+    return `<div style="padding:6px 0;border-bottom:1px solid var(--surface);font-size:14px;">${prefix}${r.nickname}：${r.hand?r.hand.name:'弃牌'} ${i===0?'<span class="history-won">'+earned+'</span>':'<span class="history-lost">'+earned+'</span>'}</div>`;
+  }).join('');
+  document.getElementById('resultContent').innerHTML=`
+    <div class="text-center" style="font-size:32px;margin:8px 0;">${winner.nickname[0]}</div>
+    <div class="text-center text-lg">${winner.nickname} 赢了 ${totalPot} 积分！</div>
+    <div class="text-center text2 text-sm">${winner.hand.name}</div>
+    <div class="mt-8">${resultHTML}</div>
+  `;
+  // Save match history
+  try{
+    await supabase.from('poker_match_history').insert({
+      room_code:__roomCode,game_id:state.handCount||0,
+      players:JSON.stringify(results.map(r=>({nickname:r.nickname,hand:r.hand?.name,earned:r.nickname===winner.nickname?totalPot:-r.currentBet}))),
+      details:JSON.stringify({community:state.communityCards,actionLog:state.actionLog}),
+      played_at:new Date().toISOString()
+    });
+    // Update points
+    for(const r of results){
+      const earned=r.nickname===winner.nickname?totalPot:-r.currentBet;
+      await updatePlayerPoints(r.nickname,earned,true);
+    }
+  }catch(e){console.error('Save history error:',e)}
+  showModal('modal-result');
+  saveGameState();
+  renderTable();
+}
+
+async function nextHand(){
+  closeModal('modal-result');
+  // Reset for next hand
+  const allPlayers=__gameState.players.map(p=>({nickname:p.nickname,isBot:p.isBot,botDifficulty:p.botDifficulty}));
+  __gameState.handCount=(__gameState.handCount||0)+1;
+  // Check blind level
+  if(__gameState.blindStructure!=='fixed'){
+    const level=Math.floor(__gameState.handCount*(__gameState.blindMinutes||10)/60);
+    // Simplified: increase blinds every blindMinutes
+    const minutesElapsed=__gameState.handCount/(60/__gameState.blindMinutes);
+  }
+  // Rotate dealer
+  __gameState.dealerIndex=(__gameState.dealerIndex+1)%allPlayers.length;
+  await initGameState(allPlayers.map(p=>p.nickname));
+}
+
+// ==================== Render ====================
+function renderTable(){
+  const state=__gameState;
+  if(!state)return;
+  // Phase
+  const phaseNames={idle:'等待中',preflop:'翻牌前',flop:'翻牌',turn:'转牌',river:'河牌',showdown:'摊牌'};
+  document.getElementById('phaseLabel').textContent=phaseNames[state.phase]||state.phase;
+  // Pot
+  const totalPot=state.pots.reduce((s,p)=>s+p.amount,0);
+  document.getElementById('potDisplay').textContent='底池：'+totalPot;
+  // Community cards
+  const cc=document.getElementById('communityCards');
+  const community=state.communityCards||[];
+  const emptyCards=5-community.length;
+  cc.innerHTML=community.map(c=>`<div class="community-card ${isRed(c)?'red':''}">${c}</div>`).join('')+
+    (state.phase==='preflop'?'':Array(emptyCards).fill(0).map(()=>'<div class="community-card back"></div>').join(''));
+  // Seats
+  const area=document.getElementById('seatArea');
+  const n=state.players.length;
+  const positions=getSeatPositions(n);
+  area.innerHTML=state.players.map((p,i)=>{
+    const pos=positions[i]||{x:50,y:50};
+    const isMe=p.nickname===__nickname;
+    const isActive=i===state.currentPlayerIndex;
+    const showCards=isMe||state.phase==='showdown'||(p.isBot&&state.phase==='showdown');
+    const cardsHtml=showCards?p.holeCards.map(c=>`<span class="s-card ${isRed(c)?'red':''}">${c}</span>`).join(''):
+      p.holeCards.map(()=>'<span class="s-card back">?</span>').join('');
+    const betText=p.currentBet>0?'<div class="s-bet">💰'+p.currentBet+'</div>':'';
+    const foldText=p.folded?'<div style="font-size:10px;color:rgba(255,255,255,.5);">已弃牌</div>':'';
+    const isDealer=i===state.dealerIndex?' 🎩':'';
+    return `<div class="seat" style="left:${pos.x}%;top:${pos.y}%;transform:translate(-50%,-50%);">
+      <div class="s-avatar ${isActive?'active':''}" style="background:${isMe?'var(--primary)':p.isBot?'var(--orange)':'var(--surface)'};">${p.nickname[0]}</div>
+      <div class="s-name">${p.nickname}${isDealer}</div>
+      <div class="s-chips">${p.chips}</div>
+      <div class="s-cards">${cardsHtml}</div>
+      ${betText}${foldText}
+    </div>`;
+  }).join('');
+  // Action buttons
+  renderActions(state);
+}
+
+function getSeatPositions(n){
+  if(n<=2)return[{x:50,y:80},{x:50,y:15}];
+  if(n<=3)return[{x:50,y:85},{x:15,y:30},{x:85,y:30}];
+  if(n<=4)return[{x:50,y:85},{x:10,y:45},{x:50,y:8},{x:90,y:45}];
+  if(n<=5)return[{x:50,y:85},{x:10,y:55},{x:25,y:8},{x:75,y:8},{x:90,y:55}];
+  return[{x:50,y:85},{x:10,y:60},{x:10,y:15},{x:50,y:5},{x:90,y:15},{x:90,y:60}];
+}
+
+function renderActions(state){
+  const meIdx=state.players.findIndex(p=>p.nickname===__nickname);
+  const me=state.players[meIdx];
+  const isMyTurn=meIdx===state.currentPlayerIndex;
+  const canAct=isMyTurn&&!me?.folded&&!me?.allIn&&state.phase!=='showdown'&&state.phase!=='idle';
+  document.getElementById('btnFold').disabled=!canAct;
+  document.getElementById('btnCheck').disabled=!canAct;
+  document.getElementById('btnCall').disabled=!canAct;
+  document.getElementById('btnRaise').disabled=!canAct;
+  document.getElementById('btnAllin').disabled=!canAct;
+  if(me){
+    const toCall=state.currentBet-me.currentBet;
+    document.getElementById('btnCheck').textContent=toCall===0?'过牌':'';
+    document.getElementById('btnCall').textContent=toCall>0?'跟注 '+toCall:'跟注';
+    document.getElementById('btnCall').style.display=toCall===0?'none':'';
+    document.getElementById('btnCheck').style.display=toCall>0?'none':'';
+  }
+}
+
+// ==================== Chat ====================
+let _chatSub=null;
+function startChatSync(){
+  if(_chatSub)_chatSub.unsubscribe();
+  _chatSub=supabase.channel('chat-'+__roomCode)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'poker_chat_messages',filter:`room_code=eq.${__roomCode}`},payload=>{
+      if(payload.new&&payload.new.nickname!==__nickname){
+        addChatMessage(payload.new.nickname,payload.new.message,'text');
+      }
+    })
+    .subscribe();
+}
+
+async function sendChat(){
+  const input=document.getElementById('chatInput');
+  const msg=input.value.trim();
+  if(!msg)return;
+  input.value='';
+  try{
+    await supabase.from('poker_chat_messages').insert({
+      room_code:__roomCode,nickname:__nickname,message:msg,type:'text'
+    });
+  }catch(e){}
+  addChatMessage(__nickname,msg,'self');
+}
+
+function addChatMessage(nick,msg,type){
+  const el=document.getElementById('chatMessages');
+  const cls=type==='dealer'?'dealer':'';
+  el.innerHTML+=`<div class="chat-msg"><span class="${cls}">${nick==='🎤 荷官'?'':(type==='dealer'?'🎤 ':(type==='self'?'👤 ':'👤 '))}<span class="nick">${nick}</span></span> ${msg}</div>`;
+  el.scrollTop=el.scrollHeight;
+}
+
+// ==================== History ====================
+async function showMyHistory(){
+  const p=await getPlayer(__nickname);
+  if(p){
+    document.getElementById('hPoints').textContent=p.points||5000;
+    document.getElementById('hGames').textContent=p.games_played||0;
+    document.getElementById('hEarnings').textContent=(p.total_earnings||0)>0?'+'+p.total_earnings:p.total_earnings||0;
+  }
+  // Get recent matches
+  const {data}=await supabase.from('poker_match_history')
+    .select('*')
+    .contains('players',JSON.stringify([{nickname:__nickname}]))
+    .order('played_at',{ascending:false}).limit(15);
+  const listEl=document.getElementById('historyList');
+  if(!data||data.length===0){
+    listEl.innerHTML='<div class="text-center text2" style="padding:20px;">暂无对局记录</div>';
+  }else{
+    listEl.innerHTML=data.map(m=>{
+      const players=m.players||[];
+      const me=players.find(p=>p.nickname===__nickname);
+      const earned=me?me.earned:0;
+      const cls=earned>0?'history-won':'history-lost';
+      return `<div class="history-item"><div>${new Date(m.played_at).toLocaleString('zh-CN')}</div><div>${players.map(p=>p.nickname+(p.nickname===__nickname?'':'')).join(' vs ')}</div><div><span class="${cls}">${earned>0?'+'+earned:earned}</span> · ${me?.hand||''}</div></div>`;
+    }).join('');
+  }
+  showScreen('history');
+}
+function hideMyHistory(){showScreen('lobby')}
+
+// ==================== Rules ====================
+function showRules(){
+  const isShort=__gameType==='short';
+  document.getElementById('rulesTitle').textContent='📖 '+(isShort?'短牌德州':'常规德州')+'规则';
+  document.getElementById('rulesContent').innerHTML=isShort?`
+    <div class="rule-section"><h3>🎯 短牌德州</h3><p>去掉 2-5，共 36 张牌。A 可以当 6 组成顺子</p></div>
+    <div class="rule-section"><h3>🃏 牌型大小（短牌）</h3><p>皇家同花顺 > 同花顺 > 四条 > 同花 > 葫芦 > 顺子 > 三条 > 两对 > 一对 > 高牌</p></div>
+    <div class="rule-section"><h3>⚡ 不同点</h3><p>同花大于葫芦 · A6789 是顺子 · 没有 2-5</p></div>
+  `:`
+    <div class="rule-section"><h3>🎯 目标</h3><p>组合最好的 5 张牌，赢下底池</p></div>
+    <div class="rule-section"><h3>🃏 牌型大小</h3><p>皇家同花顺 > 同花顺 > 四条 > 葫芦 > 同花 > 顺子 > 三条 > 两对 > 一对 > 高牌</p></div>
+    <div class="rule-section"><h3>📋 流程</h3><p>每人2张底牌 → 翻牌3张 → 转牌1张 → 河牌1张 → 摊牌</p></div>
+  `;
+  showModal('modal-rules');
+}
+
+// ==================== Init ====================
+function init(){
+  ensureTables().catch(()=>{});
+  const params=new URLSearchParams(window.location.search);
+  if(params.get('room')){__roomCode=params.get('room');joinRoom(__roomCode)}
+  const saved=localStorage.getItem('poker_nickname');
+  if(saved){const el=document.getElementById('loginNick');if(el)el.value=saved}
+  const loginBtn=document.getElementById('loginNick');
+  if(loginBtn)loginBtn.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+}
+
+document.addEventListener('DOMContentLoaded',init);
+
+// Listen for game state changes for bot auto-play
+// (simplified - check periodically)
+setInterval(()=>{if(__roomCode)checkBotTurn()},2000);
+
+// Also start chat sync when entering table
+const _origStartGame=startGame;
+startGame=async function(){await _origStartGame.apply(this,arguments);startChatSync();}
+
+// Periodic blind increase monitor
+setInterval(async()=>{
+  if(!__gameState||__gameState.blindStructure==='fixed'||__gameState.phase==='idle')return;
+  // Blind level check every minute
+},60000);
+
+console.log('♠️ 好友扑克 v1.3.0 loaded');
+console.log('📋 数据库已就绪，祝游戏愉快！');
+</script>
+</body>
+</html>
