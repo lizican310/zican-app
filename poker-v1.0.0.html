@@ -4,8 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>♠️ 好友扑克 v1.1.3</title>
-<script>window._sbCallbacks=[];window._sbReady=function(cb){window._sbCallbacks.push(cb)}</script>
+<title>♠️ 好友扑克 v1.1.4</title>
 <style>
 :root{--bg:#0D1117;--card-bg:#1A1D24;--surface:#252830;--text:#E6E8EB;--text2:#8B8E96;--primary:#007AFF;--green:#34C759;--red:#FF3B30;--orange:#FF9500;--yellow:#FFD60A;--radius:12px}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -147,6 +146,62 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 
 <!-- Sound Toggle -->
 <button class="sound-toggle" id="soundToggle">🔊</button>
+
+<!-- Inline Supabase REST client (no CDN needed) -->
+<script>
+// ==================== Supabase REST Client ====================
+(function(){
+const URL='https://tiaaldbhzwaxjecmmfqg.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRpYWFsZGJoendheGplY21tZnFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NTIyODYsImV4cCI6MjA5NTIyODI4Nn0.zqHOU_g3aWfrnvYfved6Kz-J2kYAxZoIRlj8uJpuSpE';
+const H={'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Accept':'application/json','Prefer':'return=minimal'};
+function op(v){const o=['neq.','cs.','gte.','lte.','gt.','lt.','like.','ilike.','is.'];return typeof v=='string'&&o.some(p=>v.startsWith(p))?v:'eq.'+v}
+const POLL={};
+function pollChan(t,f,cb,int=2000){
+  const k=t+':'+JSON.stringify(f);if(POLL[k])clearInterval(POLL[k])
+  let last='';async function p(){
+    try{
+      const s=f?Object.entries(f).map(([eK,eV])=>`${eK}=${encodeURIComponent(op(eV))}`).join('&'):'select=*&order=created_at.desc&limit=20';
+      const r=await fetch(URL+'/rest/v1/'+t+'?select=*&'+s,{headers:H});if(!r.ok)return;
+      const d=JSON.stringify(await r.json());if(d!==last){last=d;cb({new:JSON.parse(d)})}
+    }catch(e){}
+  }p();POLL[k]=setInterval(p,int);
+}
+function stopPoll(key){if(POLL[key]){clearInterval(POLL[key]);delete POLL[key]}}
+window.__sb={
+  from:function(t){
+    const BASE=URL+'/rest/v1/'+t;let F={},O=null,D='asc',L=0;
+    function url(cs){
+      let u=BASE+'?select='+encodeURIComponent(cs||'*');
+      const fs=Object.entries(F).map(([k,v])=>`${k}=${encodeURIComponent(op(v))}`).join('&');
+      if(fs)u+='&'+fs;if(O)u+='&order='+encodeURIComponent(O+'.'+D);if(L>0)u+='&limit='+L;
+      return u;
+    }
+    return {
+      eq:(k,v)=>{F[k]=v;return this},neq:(k,v)=>{F[k]='neq.'+v;return this},
+      order:(c,o)=>{O=c;D=o?.ascending!==false?'asc':'desc';return this},
+      limit:n=>(L=n,this),match:q=>(Object.assign(F,q),this),
+      contains:(c,v)=>{F[c]='cs.'+JSON.stringify(v);return this},
+      maybeSingle:async()=>{try{const r=await fetch(url(),{headers:H});if(!r.ok)return{data:null,error:r.status};const d=await r.json();return{data:d[0]||null,error:null}}catch(e){return{data:null,error:e}}},
+      select:async(cs='*')=>{try{const r=await fetch(url(cs),{headers:H});if(!r.ok)return{data:[],error:r.status};return{data:await r.json(),error:null}}catch(e){return{data:[],error:e}}},
+      insert:async(obj)=>{try{const r=await fetch(BASE,{method:'POST',headers:H,body:JSON.stringify(obj)});return{error:r.ok?null:r.status}}catch(e){return{error:e}}},
+      update:obj=>{let u=BASE;const fs=Object.entries(F).map(([k,v])=>`${k}=${encodeURIComponent(op(v))}`).join('&');if(fs)u+='?'+fs;return _exec('PATCH',u,obj)},
+      delete:()=>{let u=BASE;const fs=Object.entries(F).map(([k,v])=>`${k}=${encodeURIComponent(op(v))}`).join('&');if(fs)u+='?'+fs;return _exec('DELETE',u)},
+      upsert:async(obj)=>{try{const r=await fetch(BASE,{method:'POST',headers:{...H,Prefer:'resolution=merge-duplicates'},body:JSON.stringify(obj)});return{error:r.ok?null:r.status}}catch(e){return{error:e}}}
+    };
+    async function _exec(m,u,obj){try{const o={method:m,headers:{...H}};if(obj)o.body=JSON.stringify(obj);const r=await fetch(u,o);return{error:r.ok?null:r.status}}catch(e){return{error:e}}}
+  },
+  channel:(n)=>{
+    let _t,_f;const r={
+      on:(ev,cfg,cb)=>{if(cfg?.table){_t=cfg.table;const fl={};const m=cfg?.filter?.match(/^(\w+)=eq\.(.+)$/);if(m)fl[m[1]]=m[2];_f=fl;pollChan(_t,_f,p=>cb({eventType:ev,new:p.new,old:{}}))}return r},
+      subscribe:()=>{return r},
+      unsubscribe:()=>{if(_t)stopPoll(_t+':'+JSON.stringify(_f))}
+    };return r;
+  }
+};
+window.supabase=window.__sb;window.sbReady=true;
+console.log('[POKER] Supabase REST client ready');
+})();
+</script>
 
 <!-- ========== SCREEN: Login ========== -->
 <div id="screen-login" class="screen active">
@@ -354,29 +409,8 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 </div>
 
 <script>
-// ==================== Supabase ====================
-const SUPABASE_URL='https://tiaaldbhzwaxjecmmfqg.supabase.co';
-const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRpYWFsZGJoendheGplY21tZnFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NTIyODYsImV4cCI6MjA5NTIyODI4Nn0.zqHOU_g3aWfrnvYfved6Kz-J2kYAxZoIRlj8uJpuSpE';
+// ==================== Global Variables ====================
 const ADMIN_PWD='592406';
-// ==================== Init Supabase ====================
-let supabase=null;
-let sbReady=false;
-
-function initSB(){
-  // 异步加载 Supabase JS（不阻塞页面渲染）
-  const s=document.createElement('script');
-  s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-  s.onload=()=>{
-    try{
-      supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{realtime:{heartbeatIntervalMs:15000}});
-      sbReady=true;
-      console.log('[POKER] Supabase OK');
-      window._sbCallbacks.forEach(cb=>cb());
-    }catch(e){console.warn('[POKER] Supabase init fail:',e)}
-  };
-  s.onerror=()=>console.warn('[POKER] Supabase CDN 加载失败，离线模式运行');
-  document.head.appendChild(s);
-}
 let __nickname='';
 let __isAdmin=false;
 let __roomCode='';
@@ -387,20 +421,6 @@ let __botDiff='normal';
 let __botCount=0;
 let __matchHistory=[];
 let __allPlayersData=[];
-
-// ==================== DB Helpers ====================
-function sbUpsert(table,obj){
-  return supabase.from(table).upsert(obj,{onConflict:'room_code'});
-}
-function sbInsert(table,obj){
-  return supabase.from(table).insert(obj);
-}
-function sbSelect(table,query){
-  return supabase.from(table).select('*').match(query);
-}
-function sbDelete(table,query){
-  return supabase.from(table).delete().match(query);
-}
 
 // ==================== Setup Check ====================
 async function ensureTables(){
@@ -630,7 +650,7 @@ function doLogin(){
   refreshRoomList();
   startRoomListSync();
   // 后台同步 Supabase（失败不影响登录）
-  if(supabase)ensurePlayer(nick).catch(e=>console.warn('[POKER] Sync fail:',e));
+  ensurePlayer(nick).catch(e=>console.warn('[POKER] Sync fail:',e));
 }
 function tryOpenAdmin(){
   if(__nickname!=='灿总'){showToast('仅管理员可访问');return}
@@ -641,7 +661,6 @@ function logout(){__nickname='';__isAdmin=false;showScreen('login');document.get
 
 // ==================== Admin ====================
 async function loadAdminPanel(){
-  if(!supabase){showToast('⏳ 网络未连接，请稍后再试');return}
   try{
     const {data}=await supabase.from('poker_players').select('*').order('points',{ascending:false});
     __allPlayersData=data||[];
@@ -667,7 +686,6 @@ function startRoomListSync(){
 function stopRoomListSync(){if(_roomSyncInterval){clearInterval(_roomSyncInterval);_roomSyncInterval=null}}
 
 async function refreshRoomList(){
-  if(!supabase){document.getElementById('roomList').innerHTML='<div class="text-center text2" style="padding:20px;">⚠️ 网络未连接</div>';return}
   let data;
   try{
     const res=await supabase.from('poker_rooms').select('*').neq('status','finished').order('created_at',{ascending:false}).limit(20);
@@ -1288,8 +1306,7 @@ function showRules(){
 
 // ==================== Init ====================
 function init(){
-  initSB();
-  window._sbReady(()=>ensureTables().catch(()=>{}));
+  ensureTables().catch(()=>{});
   const params=new URLSearchParams(window.location.search);
   if(params.get('room')){__roomCode=params.get('room');joinRoom(__roomCode)}
   const saved=localStorage.getItem('poker_nickname');
@@ -1314,7 +1331,7 @@ setInterval(async()=>{
   // Blind level check every minute
 },60000);
 
-console.log('♠️ 好友扑克 v1.1.3 loaded');
+console.log('♠️ 好友扑克 v1.1.4 loaded');
 console.log('📋 数据库已就绪，祝游戏愉快！');
 </script>
 </body>
