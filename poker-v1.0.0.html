@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>♠️ 好友扑克 v1.1.2</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>♠️ 好友扑克 v1.1.3</title>
+<script>window._sbCallbacks=[];window._sbReady=function(cb){window._sbCallbacks.push(cb)}</script>
 <style>
 :root{--bg:#0D1117;--card-bg:#1A1D24;--surface:#252830;--text:#E6E8EB;--text2:#8B8E96;--primary:#007AFF;--green:#34C759;--red:#FF3B30;--orange:#FF9500;--yellow:#FFD60A;--radius:12px}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -358,8 +358,25 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 const SUPABASE_URL='https://tiaaldbhzwaxjecmmfqg.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRpYWFsZGJoendheGplY21tZnFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NTIyODYsImV4cCI6MjA5NTIyODI4Nn0.zqHOU_g3aWfrnvYfved6Kz-J2kYAxZoIRlj8uJpuSpE';
 const ADMIN_PWD='592406';
+// ==================== Init Supabase ====================
 let supabase=null;
 let sbReady=false;
+
+function initSB(){
+  // 异步加载 Supabase JS（不阻塞页面渲染）
+  const s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+  s.onload=()=>{
+    try{
+      supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{realtime:{heartbeatIntervalMs:15000}});
+      sbReady=true;
+      console.log('[POKER] Supabase OK');
+      window._sbCallbacks.forEach(cb=>cb());
+    }catch(e){console.warn('[POKER] Supabase init fail:',e)}
+  };
+  s.onerror=()=>console.warn('[POKER] Supabase CDN 加载失败，离线模式运行');
+  document.head.appendChild(s);
+}
 let __nickname='';
 let __isAdmin=false;
 let __roomCode='';
@@ -370,19 +387,6 @@ let __botDiff='normal';
 let __botCount=0;
 let __matchHistory=[];
 let __allPlayersData=[];
-
-// ==================== Init Supabase ====================
-function initSB(){
-  try{
-    supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{realtime:{heartbeatIntervalMs:15000}});
-    sbReady=true;
-    console.log('[POKER] Supabase OK');
-    return true;
-  }catch(e){
-    console.error('[POKER] Supabase init fail:',e);
-    return false;
-  }
-}
 
 // ==================== DB Helpers ====================
 function sbUpsert(table,obj){
@@ -637,10 +641,13 @@ function logout(){__nickname='';__isAdmin=false;showScreen('login');document.get
 
 // ==================== Admin ====================
 async function loadAdminPanel(){
-  const {data}=await supabase.from('poker_players').select('*').order('points',{ascending:false});
-  __allPlayersData=data||[];
-  const tbody=document.getElementById('adminPlayerList');
-  tbody.innerHTML=(data||[]).map(p=>`<tr><td>${p.nickname}</td><td>${p.points}</td><td>${p.games_played||0}</td><td><span class="admin-del" onclick="deletePlayer('${p.nickname}')">删除</span></td></tr>`).join('');
+  if(!supabase){showToast('⏳ 网络未连接，请稍后再试');return}
+  try{
+    const {data}=await supabase.from('poker_players').select('*').order('points',{ascending:false});
+    __allPlayersData=data||[];
+    const tbody=document.getElementById('adminPlayerList');
+    tbody.innerHTML=(data||[]).map(p=>`<tr><td>${p.nickname}</td><td>${p.points}</td><td>${p.games_played||0}</td><td><span class="admin-del" onclick="deletePlayer('${p.nickname}')">删除</span></td></tr>`).join('');
+  }catch(e){showToast('加载失败')}
   showScreen('admin');
 }
 async function deletePlayer(nick){
@@ -1281,8 +1288,8 @@ function showRules(){
 
 // ==================== Init ====================
 function init(){
-  try{initSB()}catch(e){}
-  if(supabase)ensureTables().catch(()=>{});
+  initSB();
+  window._sbReady(()=>ensureTables().catch(()=>{}));
   const params=new URLSearchParams(window.location.search);
   if(params.get('room')){__roomCode=params.get('room');joinRoom(__roomCode)}
   const saved=localStorage.getItem('poker_nickname');
@@ -1307,7 +1314,7 @@ setInterval(async()=>{
   // Blind level check every minute
 },60000);
 
-console.log('♠️ 好友扑克 v1.1.2 loaded');
+console.log('♠️ 好友扑克 v1.1.3 loaded');
 console.log('📋 数据库已就绪，祝游戏愉快！');
 </script>
 </body>
