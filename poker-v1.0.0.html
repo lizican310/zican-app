@@ -158,11 +158,20 @@ function op(v){const o=['neq.','cs.','gte.','lte.','gt.','lt.','like.','ilike.',
 const POLL={};
 function pollChan(t,f,cb,int=2000){
   const k=t+':'+JSON.stringify(f);if(POLL[k])clearInterval(POLL[k])
-  let last='';async function p(){
+  let last='',lastChatId=0;async function p(){
     try{
       const s=f?Object.entries(f).map(([eK,eV])=>`${eK}=${encodeURIComponent(op(eV))}`).join('&'):'select=*&order=created_at.desc&limit=20';
       const r=await fetch(URL+'/rest/v1/'+t+'?select=*&'+s,{headers:H});if(!r.ok)return;
-      const d=JSON.stringify(await r.json());if(d!==last){last=d;cb({new:JSON.parse(d)})}
+      const rows=await r.json();
+      // 聊天消息：增量检测，首次不触发，后续按id递增检测新消息
+      if(t==='poker_chat_messages'){
+        const maxId=rows.length>0?Math.max(...rows.map(x=>x.id||0)):0;
+        if(maxId>lastChatId){if(lastChatId>0)rows.filter(x=>(x.id||0)>lastChatId).forEach(x=>cb({new:x}));lastChatId=maxId}
+        return;
+      }
+      // 其他表（房间、游戏状态）：全量比对
+      const json=JSON.stringify(rows);if(json===last)return;
+      last=json;if(rows.length>0)cb({new:rows[0]})
     }catch(e){}
   }p();POLL[k]=setInterval(p,int);
 }
@@ -176,6 +185,11 @@ window.__sb={
       if(fs)u+='&'+fs;if(O)u+='&order='+encodeURIComponent(O+'.'+D);if(L>0)u+='&limit='+L;
       return u;
     }
+    // 写操作需要延迟执行（先收集filter再发起请求）
+    function _exec(m,obj){let u=BASE;const fs=Object.entries(F).map(([k,v])=>`${k}=${encodeURIComponent(op(v))}`).join('&');if(fs)u+='?'+fs;return _execReq(m,u,obj)}
+    async function _execReq(m,u,obj){try{const o={method:m,headers:{...H}};if(obj)o.body=JSON.stringify(obj);const r=await fetch(u,o);return{error:r.ok?null:r.status}}catch(e){return{error:e}}}
+    // 延迟执行链：update/delete 返回 thenable 对象
+    function defer(m,obj){return{then:function(r,j){_exec(m,obj).then(r).catch(j)},eq:(k,v)=>{F[k]=v;return defer(m,obj)},neq:(k,v)=>{F[k]='neq.'+v;return defer(m,obj)}}}
     return {
       eq:(k,v)=>{F[k]=v;return this},neq:(k,v)=>{F[k]='neq.'+v;return this},
       order:(c,o)=>{O=c;D=o?.ascending!==false?'asc':'desc';return this},
@@ -184,11 +198,10 @@ window.__sb={
       maybeSingle:async()=>{try{const r=await fetch(url(),{headers:H});if(!r.ok)return{data:null,error:r.status};const d=await r.json();return{data:d[0]||null,error:null}}catch(e){return{data:null,error:e}}},
       select:async(cs='*')=>{try{const r=await fetch(url(cs),{headers:H});if(!r.ok)return{data:[],error:r.status};return{data:await r.json(),error:null}}catch(e){return{data:[],error:e}}},
       insert:async(obj)=>{try{const r=await fetch(BASE,{method:'POST',headers:H,body:JSON.stringify(obj)});return{error:r.ok?null:r.status}}catch(e){return{error:e}}},
-      update:obj=>{let u=BASE;const fs=Object.entries(F).map(([k,v])=>`${k}=${encodeURIComponent(op(v))}`).join('&');if(fs)u+='?'+fs;return _exec('PATCH',u,obj)},
-      delete:()=>{let u=BASE;const fs=Object.entries(F).map(([k,v])=>`${k}=${encodeURIComponent(op(v))}`).join('&');if(fs)u+='?'+fs;return _exec('DELETE',u)},
+      update:obj=>defer('PATCH',obj),
+      delete:()=>defer('DELETE'),
       upsert:async(obj)=>{try{const r=await fetch(BASE,{method:'POST',headers:{...H,Prefer:'resolution=merge-duplicates'},body:JSON.stringify(obj)});return{error:r.ok?null:r.status}}catch(e){return{error:e}}}
     };
-    async function _exec(m,u,obj){try{const o={method:m,headers:{...H}};if(obj)o.body=JSON.stringify(obj);const r=await fetch(u,o);return{error:r.ok?null:r.status}}catch(e){return{error:e}}}
   },
   channel:(n)=>{
     let _t,_f;const r={
