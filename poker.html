@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>♠️ 好友扑克 v4.0.0</title>
+<title>♠️ 好友扑克 v2.1</title>
 <style>
 :root{--bg:#0D1117;--card-bg:#1A1D24;--surface:#252830;--text:#E6E8EB;--text2:#8B8E96;--primary:#007AFF;--green:#34C759;--red:#FF3B30;--orange:#FF9500;--yellow:#FFD60A;--radius:12px}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -59,40 +59,32 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 .player-chip .is-bot{font-size:11px;color:var(--text2)}
 
 /* Poker Table */
-.table-container{flex:1;display:flex;flex-direction:column;position:relative;overflow:hidden;max-width:900px;margin:0 auto;width:100%;background:linear-gradient(180deg,#1a1a2e 0%,#16213e 100%)}
-.table-frame{flex:1;display:flex;flex-direction:column;position:relative;padding:10px;margin:4px;background:linear-gradient(135deg,#2c1810,#4a2810,#2c1810);border-radius:20px;box-shadow:0 8px 32px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.1)}
-.table-felt{flex:1;display:flex;flex-direction:column;position:relative;border-radius:50%/40%;background:radial-gradient(ellipse at 50% 35%,#1b6e3a 0%,#14522b 40%,#0d3d1f 100%);box-shadow:inset 0 0 80px rgba(0,0,0,.4);border:2px solid rgba(255,255,255,.06);min-height:380px;overflow:hidden}
-.felt-texture{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);pointer-events:none;border-radius:inherit}
-#screen-table{overflow:hidden;padding:0;max-width:none}
-#screen-table .table-container{height:100vh;height:100dvh}
-#screen-table .action-area{flex-shrink:0;background:linear-gradient(0deg,rgba(0,0,0,.6),rgba(0,0,0,.3));backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:4px 8px;border-top:1px solid rgba(255,255,255,.08)}
+.table-container{flex:1;display:flex;flex-direction:column;position:relative;padding:4px;max-width:600px;margin:0 auto;width:100%}
+.table-felt{background:linear-gradient(135deg,#1a5c2a,#2d8a4e);border-radius:16px;flex:1;display:flex;flex-direction:column;padding:8px;position:relative;overflow:hidden;min-height:380px}
 .seat-area{position:relative;flex:1}
-.seat{position:absolute;text-align:center;z-index:5}
-.seat .s-avatar{width:44px;height:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;margin:0 auto 2px;border:2px solid rgba(255,255,255,.2);box-shadow:0 2px 12px rgba(0,0,0,.3);transition:all .2s;position:relative;background:rgba(0,0,0,.4);backdrop-filter:blur(4px)}
-.seat .s-avatar.active{border-color:var(--yellow)!important;box-shadow:0 0 20px rgba(255,214,10,.4),0 2px 12px rgba(0,0,0,.3);animation:pulse 1.5s infinite}
-.seat .s-avatar.active::after{content:'▶';position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--yellow)}
-.seat .s-name{font-size:11px;color:#fff;font-weight:600;text-shadow:0 1px 4px rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;gap:3px}
-.seat .s-chips{font-size:10px;color:rgba(255,255,255,.8);text-shadow:0 1px 4px rgba(0,0,0,.8);background:rgba(0,0,0,.3);border-radius:8px;padding:1px 6px;display:inline-block;margin-top:1px}
-.seat .s-cards{display:flex;gap:2px;justify-content:center;margin-top:3px}
-.seat .s-card{width:32px;height:46px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.3);transition:all .2s}
-.seat .s-card.red{color:#d32f2f}
-.seat .s-card.back{background:linear-gradient(135deg,#1a237e,#3949ab);color:transparent;border-color:#3949ab}
-.seat .s-bet{font-size:10px;color:#FFD60A;font-weight:700;margin-top:2px;text-shadow:0 1px 4px rgba(0,0,0,.8);background:rgba(0,0,0,.3);border-radius:8px;padding:1px 6px;display:inline-block}
-.seat .s-folded{opacity:0.4}
-.seat .s-folded .s-avatar{filter:grayscale(1)}
-@keyframes pulse{0%{box-shadow:0 0 20px rgba(255,214,10,.4),0 2px 12px rgba(0,0,0,.3)}50%{box-shadow:0 0 35px rgba(255,214,10,.6),0 2px 12px rgba(0,0,0,.3)}100%{box-shadow:0 0 20px rgba(255,214,10,.4),0 2px 12px rgba(0,0,0,.3)}}
+.seat{position:absolute;text-align:center}
+.seat .s-avatar{width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;margin:0 auto 2px;border:2px solid transparent}
+.seat .s-avatar.active{border-color:var(--yellow);animation:pulse 1s infinite}
+.seat .s-name{font-size:11px;color:#fff;font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.seat .s-chips{font-size:10px;color:rgba(255,255,255,.7)}
+.seat .s-cards{display:flex;gap:2px;justify-content:center;margin-top:2px}
+.seat .s-card{width:28px;height:40px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.seat .s-card.red{color:var(--red)}
+.seat .s-card.back{background:linear-gradient(135deg,#1a237e,#283593);color:transparent}
+.seat .s-bet{font-size:10px;color:var(--yellow);margin-top:2px}
+@keyframes pulse{0%{opacity:1}50%{opacity:.6}100%{opacity:1}}
 
 .community-area{text-align:center;padding:10px 0}
 .community-cards{display:flex;gap:4px;justify-content:center}
-.community-card{width:42px;height:60px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;background:#fff;box-shadow:0 3px 12px rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.2)}
-.community-card.red{color:#d32f2f}
-.community-card.back{background:linear-gradient(135deg,#1a237e,#3949ab);color:transparent;border-color:#3949ab}
+.community-card{width:34px;height:48px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.community-card.red{color:var(--red)}
+.community-card.back{background:linear-gradient(135deg,#1a237e,#283593);color:transparent}
 .pot-display{text-align:center;font-size:14px;color:rgba(255,255,255,.8);margin:4px 0}
 .phase-label{text-align:center;font-size:13px;color:rgba(255,255,255,.6);margin-bottom:4px}
 
-/* Action Bar - Fixed Bottom */
-.action-bar{display:flex;gap:6px;padding:4px 0;justify-content:center}
-.action-bar .btn{font-size:13px;padding:10px 12px;flex:1;min-width:50px;max-width:90px;min-height:44px;border-radius:10px;font-weight:700}
+/* Action Bar */
+.action-bar{display:flex;gap:6px;padding:8px 4px;flex-wrap:wrap;justify-content:center}
+.action-bar .btn{font-size:13px;padding:10px 16px;flex:1;min-width:60px;max-width:100px}
 .raise-input{display:flex;gap:6px;align-items:center;width:100%;max-width:300px;margin:4px auto}
 .raise-input .input{flex:1;text-align:center;font-size:18px;padding:8px}
 
@@ -156,6 +148,11 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 /* Timer */
 .s-timer{font-size:11px;color:var(--yellow);font-weight:700;margin-top:2px}
 
+/* Top Timer Bar */
+.timer-bar{position:absolute;top:44px;left:50%;transform:translateX(-50%);z-index:15;text-align:center;pointer-events:none}
+.timer-display{font-size:28px;font-weight:800;color:#FFD60A;text-shadow:0 2px 8px rgba(0,0,0,.6);min-height:32px}
+.reminder-text{font-size:12px;color:rgba(255,255,255,.85);text-shadow:0 1px 4px rgba(0,0,0,.6);margin-top:2px}
+
 /* Position Badge */
 .s-pos{display:inline-block;padding:1px 5px;border-radius:4px;font-size:9px;font-weight:700;margin-right:3px}
 .s-pos.d{background:#FFD60A;color:#000}
@@ -195,20 +192,6 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 .pot-chip.green{background:#34C759;border:1px solid #248A3D}
 .pot-chip.gold{background:#FFD60A;border:1px solid #CCAA00}
 
-/* Hand Panel - player's cards at bottom */
-.hand-panel{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:14px;padding:8px 18px;border:1px solid rgba(255,255,255,.12);z-index:20;white-space:nowrap}
-.hand-panel .hp-label{font-size:11px;color:rgba(255,255,255,.5);margin-right:4px}
-.hand-panel .hp-card{width:38px;height:54px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;background:#fff;box-shadow:0 3px 12px rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.3)}
-.hand-panel .hp-card.red{color:#d32f2f}
-.hand-panel .hp-card.back{background:linear-gradient(135deg,#1a237e,#3949ab);color:transparent}
-.hand-panel .hp-handname{font-size:12px;color:rgba(255,255,255,.6);margin-left:6px;font-style:italic}
-
-/* Raise Presets */
-.raise-presets{display:flex;gap:4px;padding:4px 0;justify-content:center}
-.raise-presets .rp-btn{padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid rgba(255,255,255,.15);cursor:pointer;background:rgba(255,255,255,.08);color:#fff;transition:all .15s;min-height:36px}
-.raise-presets .rp-btn:active{transform:scale(0.95);background:rgba(255,255,255,.2)}
-.raise-presets .rp-btn.highlight{border-color:var(--orange);background:rgba(255,149,0,.2)}
-
 /* Sound toggle */
 .sound-toggle{position:fixed;top:12px;right:12px;z-index:100;background:var(--surface);border:none;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:var(--text);font-size:18px;cursor:pointer}
 
@@ -223,22 +206,19 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 
 /* Landscape optimization */
 @media (orientation:landscape){
-  .table-felt{min-height:280px;border-radius:50%/35%}
-  .community-card{width:36px;height:52px;font-size:15px}
-  .seat .s-card{width:28px;height:40px;font-size:12px}
-  .seat .s-avatar{width:38px;height:38px;font-size:15px}
-  .hand-panel .hp-card{width:32px;height:46px;font-size:14px}
-  .hand-panel{padding:5px 12px}
+  .table-felt{min-height:280px}
+  .community-card{width:40px;height:56px;font-size:16px}
+  .seat .s-card{width:32px;height:46px;font-size:14px}
+  .seat .s-avatar{width:36px;height:36px;font-size:14px}
 }
 @media(min-width:768px){
-  .table-frame{margin:8px;padding:16px}
-  .table-felt{min-height:500px;border-radius:50%/45%}
-  .community-card{width:50px;height:70px;font-size:20px}
-  .seat .s-card{width:36px;height:52px;font-size:15px}
-  .seat .s-avatar{width:50px;height:50px;font-size:20px}
-  .hand-panel .hp-card{width:44px;height:62px;font-size:18px}
-  .hand-panel{padding:10px 24px;gap:14px}
+  .table-felt{min-height:450px}
+  .community-card{width:44px;height:62px;font-size:18px}
+  .seat .s-card{width:38px;height:54px;font-size:16px}
 }
+
+/* 44x44pt min touch area */
+.action-bar .btn{min-width:60px;min-height:44px;font-size:14px;padding:10px 12px}
 
 /* Stats */
 .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
@@ -401,9 +381,8 @@ console.log('[POKER] Supabase REST client ready');
 <!-- ========== SCREEN: Table ========== -->
 <div id="screen-table" class="screen" style="padding:0;">
   <div class="table-container">
-    <div class="table-frame">
-    <div class="table-felt" id="pokerTable">
-      <div class="felt-texture"></div>
+    <div class="table-felt full" id="pokerTable">
+      <div class="felt-border"></div>
       <!-- Room info bar -->
       <div style="position:absolute;top:4px;left:8px;z-index:10;display:flex;flex-direction:column;gap:2px;">
         <div style="font-size:11px;color:rgba(255,255,255,.7);font-weight:600;" id="tableRoomCode">---</div>
@@ -419,6 +398,10 @@ console.log('[POKER] Supabase REST client ready');
         <div class="dealer-char">💁‍♀️</div>
         <div class="dealer-label">小雅</div>
       </div>
+      <div class="timer-bar" id="timerBar">
+        <div class="timer-display" id="timerDisplay"></div>
+        <div class="reminder-text" id="reminderText">等待开始...</div>
+      </div>
       <div class="phase-label" id="phaseLabel">等待开始，点击空位添加机器人...</div>
       <div class="community-area">
         <div class="community-cards" id="communityCards">
@@ -428,12 +411,9 @@ console.log('[POKER] Supabase REST client ready');
       </div>
       <div class="pot-display" id="potDisplay"><span class="pot-chip gold"></span> 底池：0</div>
       <div class="seat-area" id="seatArea"></div>
-      <!-- Hand Panel -->
-      <div class="hand-panel" id="handPanel" style="display:none;"></div>
     </div>
-    </div><!-- end table-frame -->
 
-    <div class="action-area">
+    <div style="padding:4px 8px;">
       <div class="action-bar" id="actionBar">
         <button class="btn btn-red" onclick="pokerAction('fold')" id="btnFold">弃牌</button>
         <button class="btn btn-outline" onclick="pokerAction('check')" id="btnCheck">过牌</button>
@@ -443,22 +423,16 @@ console.log('[POKER] Supabase REST client ready');
         <button class="btn btn-outline" onclick="leaveTable()" style="font-size:11px;padding:6px 8px;min-width:auto;flex:0.5;color:var(--red);border-color:var(--red);" id="btnLeaveTable">退出</button>
       </div>
       <div class="raise-input" id="raiseInput" style="display:none;">
-        <div style="display:flex;align-items:center;gap:6px;width:100%;">
-          <span class="text2" style="font-size:12px;white-space:nowrap;">加注</span>
+        <div style="display:flex;align-items:center;gap:8px;width:100%;">
+          <span class="text2" style="font-size:13px;white-space:nowrap;">加注</span>
           <input type="range" class="raise-slider" id="raiseSlider" min="20" max="5000" value="100" step="10" oninput="updateRaiseDisplay()">
-          <input class="input" id="raiseAmount" type="number" value="100" min="20" style="width:80px;font-size:16px;padding:6px;text-align:center;">
+          <input class="input" id="raiseAmount" type="number" value="100" min="20" style="width:90px;font-size:18px;padding:8px;text-align:center;" oninput="syncRaiseSlider()">
         </div>
-        <div class="raise-presets" id="raisePresets">
-          <button class="rp-btn" onclick="raisePreset(0.5)">½底池</button>
-          <button class="rp-btn" onclick="raisePreset(0.75)">¾底池</button>
-          <button class="rp-btn highlight" onclick="raisePreset(1)">底池</button>
-          <button class="rp-btn" onclick="raisePreset(-1)">全下</button>
+        <div class="flex-center" style="justify-content:space-between;margin:4px 0;">
+          <span class="text2" style="font-size:11px;" id="raiseMinLabel">最小 20</span>
+          <span class="text2" style="font-size:11px;" id="raiseMaxLabel">全下 5000</span>
         </div>
-        <div class="flex-center" style="justify-content:space-between;margin:2px 0;">
-          <span class="text2" style="font-size:10px;" id="raiseMinLabel">最小 20</span>
-          <span class="text2" style="font-size:10px;" id="raiseMaxLabel">全下 5000</span>
-        </div>
-        <button class="btn btn-green" onclick="confirmRaise()" style="padding:8px;font-size:13px;">确认加注</button>
+        <button class="btn btn-green w-full" onclick="confirmRaise()" style="padding:10px;">确认加注</button>
       </div>
       <div class="chat-area" id="chatArea">
         <div class="chat-msgs" id="chatMessages"></div>
@@ -574,7 +548,7 @@ console.log('[POKER] Supabase REST client ready');
       <div class="rule-section"><h3>🎯 目标</h3><p>组合最好的 5 张牌，赢下底池</p></div>
       <div class="rule-section"><h3>🃏 牌型大小</h3><p>皇家同花顺 > 同花顺 > 四条 > 葫芦 > 同花 > 顺子 > 三条 > 两对 > 一对 > 高牌</p></div>
       <div class="rule-section"><h3>📋 游戏流程</h3><p>每人发 2 张底牌 → 翻牌(3张) → 转牌(1张) → 河牌(1张) → 摊牌比大小</p></div>
-      <div class="rule-section"><h3>⏱️ 行动时限</h3><p>每人 60 秒，超时自动弃牌</p></div>
+      <div class="rule-section"><h3>⏱️ 行动时限</h3><p>真人 60 秒 / Bot 5 秒，超时自动弃牌</p></div>
     </div>
     <button class="btn btn-primary w-full mt-12" onclick="closeModal('modal-rules')">知道了</button>
   </div>
@@ -1302,6 +1276,7 @@ function leaveTableToLobby(){
     if(_chatSub){_chatSub.unsubscribe();_chatSub=null}
     if(_turnTimer){clearTimeout(_turnTimer);_turnTimer=null}
     stopRenderTimer();
+    clearTimerDisplay();
     __gameState=null;
   }
   if(_tableLobbySub){_tableLobbySub.unsubscribe();_tableLobbySub=null}
@@ -1534,30 +1509,75 @@ async function loadGameState(){
   }
 }
 
-// ==================== Turn Timer ====================
+// ==================== Turn Timer (Human 60s / Bot 5s) ====================
 function startTurnTimer(){
   if(_turnTimer)clearTimeout(_turnTimer);
   if(!__gameState||__gameState.phase==='showdown'||__gameState.phase==='idle')return;
-  const currentPlayer=__gameState.players[__gameState.currentPlayerIndex];
-  if(!currentPlayer||currentPlayer.folded||currentPlayer.allIn||currentPlayer.isBot)return;
-  if(!currentPlayer.isBot){_turnTimer=setTimeout(()=>{pokerAction('fold')},30000)}
+  const idx=__gameState.currentPlayerIndex;
+  const player=__gameState.players[idx];
+  if(!player||player.folded||player.allIn)return;
+  const isBot=player.isBot;
+  const limit=isBot?5000:60000;
+  const label=isBot?'Bot':'真人';
+  __gameState._turnLimit=limit;
+  __gameState._turnStart=Date.now();
+  // Update top timer display immediately
+  updateTimerDisplay(player.nickname,limit/1000,isBot);
+  // Only set timeout for human players (bot timeout handled in checkBotTurn)
+  if(!isBot){
+    _turnTimer=setTimeout(()=>{pokerAction('fold')},limit);
+  }
 }
 
-// Auto-play bot turns
+function updateTimerDisplay(nick,seconds,isBot){
+  const td=document.getElementById('timerDisplay');
+  const rt=document.getElementById('reminderText');
+  if(td)td.textContent=seconds+'s';
+  if(rt){
+    const typeLabel=isBot?'Bot':'真人';
+    rt.textContent='🎤 '+nick+' 该你了 ('+seconds+'秒)';
+    // Also speak
+    try{
+      if(soundEnabled&&'speechSynthesis'in window){
+        const u=new SpeechSynthesisUtterance(nick+'，请行动');
+        u.lang='zh-CN';u.rate=1.1;u.pitch=0.9;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(u);
+      }
+    }catch(e){}
+  }
+}
+
+function clearTimerDisplay(){
+  const td=document.getElementById('timerDisplay');
+  const rt=document.getElementById('reminderText');
+  if(td)td.textContent='';
+  if(rt)rt.textContent='等待中...';
+}
+
+// Auto-play bot turns (5s limit, 300ms decision delay)
 async function checkBotTurn(){
   if(!__gameState||__gameState.phase==='showdown'||__gameState.phase==='idle')return;
   const idx=__gameState.currentPlayerIndex;
   const player=__gameState.players[idx];
   if(!player||!player.isBot||player.folded||player.allIn)return;
-  // Bot timeout protection: if bot takes >2s, auto-fold/call
+  // Bot has 5s limit total
   const timeoutPromise=new Promise(resolve=>setTimeout(()=>{
     const toCall=__gameState.currentBet-player.currentBet;
     if(toCall===0)resolve({action:'check',amount:0});
     else resolve({action:'call',amount:Math.min(toCall,player.chips)});
-  },2000));
-  const actionPromise=Promise.resolve().then(()=>getBotAction(__gameState,player.nickname,player.botDifficulty));
+  },5000));
+  // Bot decision with 300ms delay (keep existing random action logic)
+  const actionPromise=Promise.resolve().then(()=>{
+    return new Promise(r=>setTimeout(()=>{
+      r(getBotAction(__gameState,player.nickname,player.botDifficulty));
+    },300));
+  });
   const action=await Promise.race([actionPromise,timeoutPromise]);
+  // Update timer display for bot
   if(action){
+    const remaining=Math.ceil((5000-(Date.now()-(__gameState._turnStart||Date.now())))/1000);
+    updateTimerDisplay(player.nickname,Math.max(1,remaining),true);
     await processAction(idx,action.action,action.amount);
   }
 }
@@ -1626,27 +1646,6 @@ function syncRaiseSlider(){
   const v=parseInt(inp.value)||0;
   const maxChips=__gameState?__gameState.players.find(p=>p.nickname===__nickname)?.chips||5000:5000;
   slider.value=Math.min(v,maxChips);
-}
-
-function raisePreset(multiplier){
-  if(!__gameState)return;
-  const me=__gameState.players.find(p=>p.nickname===__nickname);
-  if(!me)return;
-  const pot=__gameState.pots.reduce((s,p)=>s+p.amount,0);
-  const toCall=__gameState.currentBet-me.currentBet;
-  const minRaise=Math.max(__gameState.minBet||20,__gameState.currentBet*2);
-  let amount=0;
-  if(multiplier===-1){
-    // All-in
-    amount=me.chips;
-  }else{
-    const target=Math.floor(pot*multiplier)+toCall;
-    amount=Math.max(minRaise,Math.min(target,me.chips));
-  }
-  document.getElementById('raiseAmount').value=amount;
-  document.getElementById('raiseSlider').value=Math.min(amount,me.chips);
-  const inp=document.getElementById('raiseAmount');
-  parseInt(inp.value)>=me.chips?showToast('等于或超过你全部筹码，将全下'):null;
 }
 
 async function confirmRaise(){
@@ -1737,6 +1736,7 @@ async function advancePhase(state){
   if(active.length<=1){
     // One player left, they win
     await showdown(state);
+    clearTimerDisplay();
     return;
   }
   // Reset bets for next phase
@@ -1897,10 +1897,11 @@ function renderTable(){
     const posLabel=getPositionLabel(i,state.dealerIndex,n);
     const posClass=getPosClass(posLabel);
     const posBadge=posLabel?`<span class="s-pos ${posClass}">${posLabel}</span>`:'';
-    // Timer countdown
-    const elapsed=isActive&&!p.folded&&!p.allIn?(30000-Math.floor((now-(state.roundStartTime||now)))/1000*1000)/1000:0;
-    const timerText=isActive&&!p.folded&&!p.allIn&&!p.isBot?`<div class="s-timer">⏱️ ${Math.max(0,Math.ceil(elapsed))}s</div>`:'';
-    return `<div class="seat${p.folded?' s-folded':''}" style="left:${pos.x}%;top:${pos.y}%;transform:translate(-50%,-50%);">
+    // Timer countdown (human 60s, bot 5s)
+    const turnLimit=state._turnLimit||(p.isBot?5000:60000);
+    const elapsed=isActive&&!p.folded&&!p.allIn?(turnLimit-Math.floor((now-(state._turnStart||now))))/1000:0;
+    const timerText=isActive&&!p.folded&&!p.allIn?`<div class="s-timer">⏱️ ${Math.max(0,Math.ceil(elapsed))}s</div>`:'';
+    return `<div class="seat" style="left:${pos.x}%;top:${pos.y}%;transform:translate(-50%,-50%);${p.folded?'opacity:0.5;':''}">
       <div class="s-avatar ${isActive?'active':''}" style="background:${isMe?'var(--primary)':p.isBot?'var(--orange)':'var(--surface)'};">${p.nickname[0]}</div>
       <div class="s-name">${posBadge}${p.nickname}</div>
       <div class="s-chips">💰${p.chips}</div>
@@ -1908,18 +1909,22 @@ function renderTable(){
       ${betText}${foldText}${timerText}
     </div>`;
   }).join('');
-  // Hand panel - show my hole cards at bottom
-  const hp=document.getElementById('handPanel');
-  if(hp&&state.players){
-    const me=state.players.find(p=>p.nickname===__nickname);
-    if(me&&me.holeCards&&me.holeCards.length===2&&state.phase!=='idle'){
-      hp.style.display='flex';
-      const handInfo=bestHand([...me.holeCards,...(state.communityCards||[])],state.gameType==='short');
-      hp.innerHTML=me.holeCards.map(c=>`<span class="hp-card ${isRed(c)?'red':''}">${c}</span>`).join('')+
-        (handInfo.name?`<span class="hp-handname">${handInfo.name}</span>`:'')+
-        `<span class="hp-label" style="margin-left:6px;">💰${me.chips}</span>`;
-    }else{
-      hp.style.display='none';
+  // Top timer bar - realtime countdown
+  const topTd=document.getElementById('timerDisplay');
+  const topRt=document.getElementById('reminderText');
+  if(state.phase==='showdown'||state.phase==='idle'){
+    if(topTd)topTd.textContent='';
+    if(topRt)topRt.textContent='牌局结束';
+  }else{
+    const cur=state.players[state.currentPlayerIndex];
+    if(cur&&!cur.folded&&!cur.allIn){
+      const limit=state._turnLimit||(cur.isBot?5000:60000);
+      const remain=Math.max(0,Math.ceil((limit-(Date.now()-(state._turnStart||Date.now())))/1000));
+      if(topTd)topTd.textContent=remain+'s';
+      if(topRt){
+        const label=cur.isBot?'Bot':'真人';
+        topRt.textContent='🎤 '+cur.nickname+' 该你了 ('+remain+'秒)';
+      }
     }
   }
   // Action buttons
@@ -2229,14 +2234,14 @@ function showRules(){
     <div class="rule-section"><h3>🃏 顺子规则</h3><p>最低顺子：6-7-8-9-10<br>最高顺子：10-J-Q-K-A<br>A-6-7-8-9 不算顺子</p></div>
     <div class="rule-section"><h3>💰 前注（Ante）规则</h3><p>每局开始所有玩家支付一个前注（底注），庄位玩家额外支付一个前注，以增加底池。</p></div>
     <div class="rule-section"><h3>📋 游戏流程</h3><p>每人 2 张底牌 → 翻牌 3 张 → 转牌 1 张 → 河牌 1 张 → 摊牌比大小</p></div>
-    <div class="rule-section"><h3>⏱️ 行动时限</h3><p>每人 30 秒，超时自动弃牌</p></div>
+    <div class="rule-section"><h3>⏱️ 行动时限</h3><p>真人 60 秒 / Bot 5 秒，超时自动弃牌</p></div>
   `:`
     <div class="rule-section"><h3>🎯 目标</h3><p>组合最好的 5 张牌，赢下底池</p></div>
     <div class="rule-section"><h3>🃏 牌型大小（从大到小）</h3><p>🥇 皇家同花顺 > 🥈 同花顺 > 🥉 四条 > 🏅 葫芦 > 🏅 同花 > 🏅 顺子 > 🏅 三条 > 🏅 两对 > 🏅 一对 > 🏅 高牌</p></div>
     <div class="rule-section"><h3>🃏 顺子规则</h3><p>A-2-3-4-5 是最小的顺子（轮盘顺），10-J-Q-K-A 是最大的顺子（皇家顺）。</p></div>
     <div class="rule-section"><h3>📋 游戏流程</h3><p>每人 2 张底牌 → 翻牌 3 张 → 转牌 1 张 → 河牌 1 张 → 摊牌比大小</p></div>
     <div class="rule-section"><h3>💰 盲注结构</h3><p>固定盲注：每局 SB=5，BB=10，全程不变<br>快速盲注：每 8 分钟升级<br>普通盲注：每 12 分钟升级</p></div>
-    <div class="rule-section"><h3>⏱️ 行动时限</h3><p>每人 30 秒，超时自动弃牌</p></div>
+    <div class="rule-section"><h3>⏱️ 行动时限</h3><p>真人 60 秒 / Bot 5 秒，超时自动弃牌</p></div>
   `;
   showModal('modal-rules');
 }
@@ -2283,7 +2288,7 @@ setInterval(async()=>{
   // Blind level check every minute
 },60000);
 
-console.log('♠️ 好友扑克 v4.0.0 loaded');
+console.log('♠️ 好友扑克 v2.1 loaded');
 console.log('📋 数据库已就绪，祝游戏愉快！');
 </script>
 </body>
