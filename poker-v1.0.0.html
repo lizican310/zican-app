@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>♠️ 好友扑克 v1.1.0</title>
+<title>♠️ 好友扑克 v1.1.1</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--bg:#0D1117;--card-bg:#1A1D24;--surface:#252830;--text:#E6E8EB;--text2:#8B8E96;--primary:#007AFF;--green:#34C759;--red:#FF3B30;--orange:#FF9500;--yellow:#FFD60A;--radius:12px}
@@ -353,17 +353,6 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
   </div>
 </div>
 
-<!-- ========== MODAL: Admin Password ========== -->
-<div class="modal-overlay" id="modal-admin-pwd">
-  <div class="modal-box">
-    <div class="modal-title">⚙️ 管理员验证</div>
-    <div class="subtitle">请输入管理员密码</div>
-    <input class="input" id="adminPwdInput" type="password" placeholder="管理员密码" maxlength="20" style="font-size:14px;">
-    <button class="btn btn-primary w-full mt-12" onclick="verifyAdminPwd()">确认</button>
-    <button class="btn btn-outline w-full mt-8" onclick="closeModal('modal-admin-pwd')">取消</button>
-  </div>
-</div>
-
 <script>
 // ==================== Supabase ====================
 const SUPABASE_URL='https://tiaaldbhzwaxjecmmfqg.supabase.co';
@@ -637,18 +626,7 @@ async function doLogin(){
   startRoomListSync();
 }
 function tryOpenAdmin(){
-  if(__nickname==='灿总'){
-    __isAdmin=true;
-    loadAdminPanel();
-  }else{
-    showModal('modal-admin-pwd');
-    document.getElementById('adminPwdInput').value='';
-  }
-}
-async function verifyAdminPwd(){
-  const pwd=document.getElementById('adminPwdInput').value.trim();
-  if(pwd!==ADMIN_PWD){showToast('密码错误');return}
-  closeModal('modal-admin-pwd');
+  if(__nickname!=='灿总'){showToast('仅管理员可访问');return}
   __isAdmin=true;
   loadAdminPanel();
 }
@@ -1311,8 +1289,6 @@ async function init(){
   // Check for saved nickname
   const saved=localStorage.getItem('poker_nickname');
   if(saved){document.getElementById('loginNick').value=saved}
-  // Enter key support for admin password modal
-  document.getElementById('adminPwdInput').addEventListener('keydown',e=>{if(e.key==='Enter')verifyAdminPwd()});
   document.getElementById('loginNick').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
 }
 
@@ -1332,7 +1308,7 @@ setInterval(async()=>{
   // Blind level check every minute
 },60000);
 
-console.log('♠️ 好友扑克 v1.1.0 loaded');
+console.log('♠️ 好友扑克 v1.1.1 loaded');
 console.log('📋 数据库已就绪，祝游戏愉快！');
 </script>
 </body>
