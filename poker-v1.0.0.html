@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>♠️ 好友扑克 v1.1.1</title>
+<title>♠️ 好友扑克 v1.1.2</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--bg:#0D1117;--card-bg:#1A1D24;--surface:#252830;--text:#E6E8EB;--text2:#8B8E96;--primary:#007AFF;--green:#34C759;--red:#FF3B30;--orange:#FF9500;--yellow:#FFD60A;--radius:12px}
@@ -572,7 +572,8 @@ async function updatePlayerPoints(nick,delta,addGame){
 // ==================== Screen Management ====================
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById('screen-'+id).classList.add('active');
+  const el=document.getElementById('screen-'+id);
+  if(el)el.classList.add('active');
 }
 function showModal(id){document.getElementById(id).classList.add('active')}
 function closeModal(id){document.getElementById(id).classList.remove('active')}
@@ -583,8 +584,11 @@ function showToast(msg){
 }
 
 // ==================== Audio ====================
-let soundEnabled=localStorage.getItem('poker_sound')!=='0';
-document.getElementById('soundToggle').textContent=soundEnabled?'🔊':'🔇';
+let soundEnabled=true;
+try{
+  soundEnabled=localStorage.getItem('poker_sound')!=='0';
+  document.getElementById('soundToggle').textContent=soundEnabled?'🔊':'🔇';
+}catch(e){}
 
 function playSound(type){
   if(!soundEnabled)return;
@@ -610,20 +614,19 @@ document.getElementById('soundToggle').onclick=()=>{
 };
 
 // ==================== Login ====================
-async function doLogin(){
+function doLogin(){
   const nick=document.getElementById('loginNick').value.trim();
   if(!nick||nick.length<1){showToast('请输入昵称');return}
   if(nick===ADMIN_PWD){showToast('昵称不可用');return}
   __nickname=nick;
   localStorage.setItem('poker_nickname',nick);
-  // 尝试同步到 Supabase（失败不影响登录）
-  try{
-    if(supabase)await ensurePlayer(nick);
-  }catch(e){console.warn('[POKER] Supabase sync failed, playing offline',e)}
+  // 先切界面（同步执行，不依赖网络）
   showScreen('lobby');
   document.getElementById('lobbyNick').textContent='👤 '+nick;
   refreshRoomList();
   startRoomListSync();
+  // 后台同步 Supabase（失败不影响登录）
+  if(supabase)ensurePlayer(nick).catch(e=>console.warn('[POKER] Sync fail:',e));
 }
 function tryOpenAdmin(){
   if(__nickname!=='灿总'){showToast('仅管理员可访问');return}
@@ -1277,19 +1280,15 @@ function showRules(){
 }
 
 // ==================== Init ====================
-async function init(){
-  initSB();  // 不阻塞登录，Supabase 失败也能离线玩
-  // 检查 Supabase 是否可用
-  if(supabase){
-    try{await ensureTables()}catch(e){}
-  }
-  // Auto-join from URL params
+function init(){
+  try{initSB()}catch(e){}
+  if(supabase)ensureTables().catch(()=>{});
   const params=new URLSearchParams(window.location.search);
   if(params.get('room')){__roomCode=params.get('room');joinRoom(__roomCode)}
-  // Check for saved nickname
   const saved=localStorage.getItem('poker_nickname');
-  if(saved){document.getElementById('loginNick').value=saved}
-  document.getElementById('loginNick').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+  if(saved){const el=document.getElementById('loginNick');if(el)el.value=saved}
+  const loginBtn=document.getElementById('loginNick');
+  if(loginBtn)loginBtn.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
 }
 
 document.addEventListener('DOMContentLoaded',init);
@@ -1308,7 +1307,7 @@ setInterval(async()=>{
   // Blind level check every minute
 },60000);
 
-console.log('♠️ 好友扑克 v1.1.1 loaded');
+console.log('♠️ 好友扑克 v1.1.2 loaded');
 console.log('📋 数据库已就绪，祝游戏愉快！');
 </script>
 </body>
